@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "56104389901",
+    "project_id": "eduhelix-db",
+    "storage_bucket": "eduhelix-db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:56104389901:android:09a85e2287f220740b3444",
+        "android_client_info": {
+          "package_name": "com.example.flutter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBZ0_7zoxo5fGgAtGavbwF5TnEJIXdnHY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

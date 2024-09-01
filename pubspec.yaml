@@ -1,0 +1,171 @@
+name: flutter_app
+description: "A new Flutter project."
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.2.1
+  fluttertoast: ^8.2.8
+  lottie: ^3.1.2
+  path_provider: ^2.1.4
+  image_picker: ^1.1.2
+  firebase_core: ^3.4.0
+  cloud_firestore: ^5.3.0
+  connectivity_plus: ^6.0.5
+  shared_preferences: ^2.2.3
+  sqflite: ^2.3.3+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_svg: ^2.0.10+1
+  flutter_launcher_icons: ^0.13.1
+
+
+flutter:
+  uses-material-design: true
+  assets:
+  - assets/vectors/arrow_261_x2.svg
+  - assets/images/ellipse_68.png
+  - assets/images/
+  - assets/images/imgEye.png
+  - assets/images/imgEyeClosed.png
+  - assets/animated_icon/
+  - assets/vectors/container_10_x2.svg
+  - assets/vectors/container_1_x2.svg
+  - assets/vectors/vector_63_x2.svg
+  - assets/vectors/vector_46_x2.svg
+  - assets/vectors/container_x2.svg
+  - assets/vectors/container_17_x2.svg
+  - assets/vectors/rectangle_3_x2.svg
+  - assets/vectors/vector_51_x2.svg
+  - assets/vectors/vector_64_x2.svg
+  - assets/vectors/vector_6_x2.svg
+  - assets/vectors/vector_1_x2.svg
+  - assets/vectors/rectangle_8_x2.svg
+  - assets/vectors/vector_36_x2.svg
+  - assets/vectors/vector_89_x2.svg
+  - assets/vectors/vector_58_x2.svg
+  - assets/vectors/vector_56_x2.svg
+  - assets/vectors/vector_74_x2.svg
+  - assets/vectors/rectangle_7_x2.svg
+  - assets/vectors/container_7_x2.svg
+  - assets/vectors/container_20_x2.svg
+  - assets/vectors/vector_23_x2.svg
+  - assets/vectors/vector_45_x2.svg
+  - assets/vectors/vector_75_x2.svg
+  - assets/vectors/vector_70_x2.svg
+  - assets/vectors/vector_68_x2.svg
+  - assets/vectors/vector_66_x2.svg
+  - assets/vectors/rectangle_9_x2.svg
+  - assets/vectors/vector_48_x2.svg
+  - assets/vectors/vector_3_x2.svg
+  - assets/vectors/vector_11_x2.svg
+  - assets/vectors/container_9_x2.svg
+  - assets/vectors/vector_80_x2.svg
+  - assets/vectors/vector_73_x2.svg
+  - assets/vectors/rectangle_2_x2.svg
+  - assets/vectors/vector_14_x2.svg
+  - assets/vectors/vector_44_x2.svg
+  - assets/vectors/vector_16_x2.svg
+  - assets/vectors/rectangle_1_x2.svg
+  - assets/vectors/vector_87_x2.svg
+  - assets/vectors/vector_76_x2.svg
+  - assets/images/bitmap.png
+  - assets/images/homescreen_apps_iphone_2_x.png
+  - assets/vectors/battery_1_x2.svg
+  - assets/vectors/wifi_5_x2.svg
+  - assets/vectors/container_13_x2.svg
+  - assets/vectors/cellular_connection_2_x2.svg
+  - assets/vectors/arrow_265_x2.svg
+  - assets/vectors/container_23_x2.svg
+  - assets/vectors/vector_2_x2.svg
+  - assets/vectors/vector_28_x2.svg
+  - assets/vectors/container_25_x2.svg
+  - assets/vectors/vector_24_x2.svg
+  - assets/vectors/vector_72_x2.svg
+  - assets/vectors/container_12_x2.svg
+  - assets/vectors/vector_34_x2.svg
+  - assets/vectors/vector_13_x2.svg
+  - assets/vectors/vector_59_x2.svg
+  - assets/vectors/container_6_x2.svg
+  - assets/vectors/container_16_x2.svg
+  - assets/vectors/group_216_x2.svg
+  - assets/vectors/vector_49_x2.svg
+  - assets/vectors/container_26_x2.svg
+  - assets/vectors/arrow_263_x2.svg
+  - assets/vectors/icon_action_eye_eye_off_x2.svg
+  - assets/vectors/wifi_6_x2.svg
+  - assets/vectors/group_333981_x2.svg
+  - assets/vectors/cellular_connection_x2.svg
+  - assets/vectors/battery_5_x2.svg
+  - assets/vectors/arrow_262_x2.svg
+  - assets/vectors/upload_x2.svg
+  - assets/vectors/container_24_x2.svg
+  - assets/vectors/vector_54_x2.svg
+  - assets/vectors/vector_84_x2.svg
+  - assets/vectors/container_11_x2.svg
+  - assets/vectors/group_2_x2.svg
+  - assets/vectors/container_14_x2.svg
+  - assets/vectors/vector_9_x2.svg
+  - assets/vectors/vector_x2.svg
+  - assets/vectors/group_x2.svg
+  - assets/vectors/rectangle_10_x2.svg
+  - assets/vectors/vector_7_x2.svg
+  - assets/vectors/vector_42_x2.svg
+  - assets/vectors/vector_37_x2.svg
+  - assets/images/ellipse_68.png
+  - assets/vectors/vector_65_x2.svg
+  - assets/vectors/vector_90_x2.svg
+  - assets/vectors/container_3_x2.svg
+  - assets/vectors/container_2_x2.svg
+  - assets/vectors/container_15_x2.svg
+  - assets/vectors/container_22_x2.svg
+  - assets/vectors/group_33398_x2.svg
+  - assets/vectors/wifi_2_x2.svg
+  - assets/vectors/battery_2_x2.svg
+  - assets/vectors/cellular_connection_5_x2.svg
+  - assets/vectors/arrow_264_x2.svg
+  - assets/images/ellipse_68.png
+  - assets/vectors/vector_5_x2.svg
+  - assets/vectors/wifi_x2.svg
+  - assets/vectors/vector_4_x2.svg
+  - assets/vectors/container_8_x2.svg
+  - assets/vectors/vector_32_x2.svg
+  - assets/vectors/vector_86_x2.svg
+  - assets/vectors/vector_62_x2.svg
+  - assets/vectors/vector_39_x2.svg
+  - assets/vectors/vector_8_x2.svg
+  - assets/vectors/vector_20_x2.svg
+  - assets/vectors/vector_33_x2.svg
+  - assets/vectors/vector_79_x2.svg
+  - assets/vectors/rectangle_4_x2.svg
+  - assets/vectors/vector_50_x2.svg
+  - assets/vectors/battery_4_x2.svg
+  - assets/vectors/vector_38_x2.svg
+  - assets/vectors/vector_35_x2.svg
+  - assets/vectors/rectangle_x2.svg
+  - assets/vectors/vector_29_x2.svg
+  - assets/vectors/vector_53_x2.svg
+  - assets/vectors/vector_69_x2.svg
+  - assets/vectors/icon_outlined_other_person_user_1_x2.svg
+  - assets/vectors/microphone_21_x2.svg
+  - assets/vectors/vector_31_x2.svg
+  - assets/vectors/rectangle_5_x2.svg
+  - assets/vectors/vector_25_x2.svg
+  - assets/vectors/cellular_connection_1_x2.svg
+  - assets/vectors/rectangle_6_x2.svg
+  - assets/vectors/arrow_26_x2.svg
+
+flutter_icons:
+  android: true
+  min_sdk_android: 21
+  image_path_android: "assets/images/container_13.png"
