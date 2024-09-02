@@ -4,15 +4,20 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import '../Database_Helper/SQLiteDatabaseHelper.dart';
 import '../Database_Helper/static_users.dart';
 import 'custom_card.dart';
-import 'menu_item.dart'; // Corrected import for menu_item.dart
+import 'menu_item.dart';
 
 class Home extends StatefulWidget {
-  final User user;
+  final String studentNumber;
+  final String? firstName;
+  final String? lastName;
 
-  const Home({required this.user}); // Marked as const for optimization
+  const Home({
+    required this.studentNumber,
+    this.firstName,
+    this.lastName,
+  });
 
   @override
   _HomeState createState() => _HomeState();
@@ -35,9 +40,21 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    _filteredItems = _items; // Initialize filtered items
+    _filteredItems = _items;
     _searchController.addListener(_filterItems);
-    _listenForUserData(); // Listen for real-time updates
+
+    if (widget.studentNumber.isNotEmpty) {
+      _listenForUserData();
+    } else {
+      Fluttertoast.showToast(
+        msg: "Student number is empty. Please sign in again.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
+    }
   }
 
   @override
@@ -57,18 +74,15 @@ class _HomeState extends State<Home> {
   void _listenForUserData() {
     FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.user.studentNumber)
+        .doc(widget.studentNumber)
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists) {
         var user = snapshot.data()!;
         setState(() {
-          _profileImageUrl = user['profilePictureUrl']; // Get profile picture URL
+          _profileImageUrl = user['profilePictureUrl'];
         });
-        // Optionally, sync with local SQLite database
-        SQLDatabaseHelper.instance.insertUser(user);
       } else {
-        // Handle the case where the document does not exist
         Fluttertoast.showToast(
           msg: "User data does not exist.",
           toastLength: Toast.LENGTH_SHORT,
@@ -93,19 +107,19 @@ class _HomeState extends State<Home> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 50), // Top padding
+            const SizedBox(height: 50),
             _buildWelcomeText(),
-            const SizedBox(height: 8), // Spacing
+            const SizedBox(height: 8),
             _buildHeaderRow(),
-            const SizedBox(height: 24), // Spacing before search bar
+            const SizedBox(height: 24),
             _buildSearchBar(),
-            const SizedBox(height: 24), // Spacing before menu
+            const SizedBox(height: 24),
             _buildMenuTitle(),
-            const SizedBox(height: 16), // Spacing before menu items
+            const SizedBox(height: 16),
             _buildMenuItems(),
-            const SizedBox(height: 32), // Spacing before transcriptions
+            const SizedBox(height: 32),
             _buildTranscriptionsTitle(),
-            const SizedBox(height: 10), // Spacing before the list of transcriptions
+            const SizedBox(height: 10),
             _buildTranscriptionsList(),
           ],
         ),
@@ -135,7 +149,7 @@ class _HomeState extends State<Home> {
       children: [
         Flexible(
           child: Text(
-            widget.user.firstName,
+            widget.firstName ?? 'User',
             style: GoogleFonts.montserrat(
               fontWeight: FontWeight.w700,
               fontSize: 32,
@@ -146,15 +160,14 @@ class _HomeState extends State<Home> {
         ),
         GestureDetector(
           onTap: () {
-            // Navigate to the profile page with user data as arguments
             Navigator.pushNamed(
               context,
               '/profile',
               arguments: {
-                'firstName': widget.user.firstName,
-                'lastName': widget.user.lastName,
-                'studentNumber': widget.user.studentNumber,
-                'profilePictureUrl': _profileImageUrl, // Pass profile picture URL
+                'firstName': widget.firstName,
+                'lastName': widget.lastName,
+                'studentNumber': widget.studentNumber,
+                'profilePictureUrl': _profileImageUrl,
               },
             );
           },
@@ -258,13 +271,18 @@ class _HomeState extends State<Home> {
               color: Colors.white,
             ),
           ),
-          Text(
-            'See all',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
-              height: 1.1,
-              color: const Color(0xFF73CBE6),
+          GestureDetector(
+            onTap: () {
+              // Implement navigation to "See all" transcriptions
+            },
+            child: Text(
+              'See all',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                height: 1.1,
+                color: const Color(0xFF73CBE6),
+              ),
             ),
           ),
         ],

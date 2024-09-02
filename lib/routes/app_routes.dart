@@ -43,6 +43,8 @@ class AppRoutes {
       group36139: (context) => Group36139(),
       group36140: (context) => Group36140(),
       group36141: (context) => Group36141(),
+
+      /*
       home: (context) {
         final args = ModalRoute.of(context)?.settings.arguments as Map?;
         final user = args != null ? User(
@@ -58,8 +60,16 @@ class AppRoutes {
           password: '',
           profilePictureUrl: '', // Add this line
         );
-        return Home(user: user);
+
+        return Home(
+          studentNumber: user.studentNumber,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        );
       },
+
+       */
+
 
       profile: (context) {
         final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;

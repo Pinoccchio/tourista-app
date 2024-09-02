@@ -1,11 +1,16 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_app/pages/SignIn_Screen/sign_in_filled.dart';
+import 'package:flutter_app/pages/splash.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'Database_Helper/FirestoreDatabaseHelper.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../routes/app_routes.dart';
 import 'Database_Helper/static_users.dart';
 
 class Profile extends StatefulWidget {
@@ -19,14 +24,14 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   String? _profileImageUrl;
-  bool _isLoading = true; // Add a loading state
+  bool _isLoading = true;
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     _profileImageUrl = widget.user.profilePictureUrl;
-    _isLoading = false; // Data is already loaded from Home
+    _isLoading = false;
   }
 
   Future<void> _pickImage() async {
@@ -38,11 +43,33 @@ class _ProfileState extends State<Profile> {
         _profileImageUrl = profileImageUrl;
       });
 
-      // Update the profile picture URL in Firestore
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.user.studentNumber)
-          .update({'profilePictureUrl': profileImageUrl});
+      final studentNumber = widget.user.studentNumber;
+      if (studentNumber != null && studentNumber.isNotEmpty) {
+        try {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(studentNumber)
+              .update({'profilePictureUrl': profileImageUrl});
+        } catch (e) {
+          Fluttertoast.showToast(
+            msg: "Error updating profile picture: $e",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0,
+          );
+        }
+      } else {
+        Fluttertoast.showToast(
+          msg: "Error: Student number is invalid.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
     }
   }
 
@@ -50,8 +77,29 @@ class _ProfileState extends State<Profile> {
     final storageRef = FirebaseStorage.instance
         .ref()
         .child('profile_pictures/${widget.user.studentNumber}.jpg');
-    await storageRef.putFile(File(file.path)); // Correct usage of File
+    await storageRef.putFile(File(file.path));
     return await storageRef.getDownloadURL();
+  }
+
+  void _signOut(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await prefs.setBool('isLoggedIn', false);
+    await prefs.remove('studentNumber');
+
+    Fluttertoast.showToast(
+      msg: "Signed out successfully!",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.black54,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+
+    // Close the application
+    SystemNavigator.pop();
+
   }
 
   @override
@@ -62,13 +110,13 @@ class _ProfileState extends State<Profile> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            SizedBox(height: 40), // Padding for status bar
+            SizedBox(height: 40),
             Row(
               children: [
                 IconButton(
                   icon: SvgPicture.asset('assets/vectors/vector_46_x2.svg'),
                   onPressed: () {
-                    Navigator.pop(context); // Go back to the previous screen
+                    Navigator.pop(context);
                   },
                 ),
                 Text(
@@ -103,7 +151,7 @@ class _ProfileState extends State<Profile> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        SizedBox(height: 20), // Space for profile image
+                        SizedBox(height: 20),
                         Text(
                           '${widget.user.firstName} ${widget.user.lastName}',
                           style: GoogleFonts.poppins(
@@ -142,7 +190,7 @@ class _ProfileState extends State<Profile> {
                           bottom: 0,
                           right: 0,
                           child: GestureDetector(
-                            onTap: _pickImage, // Trigger the image picker
+                            onTap: _pickImage,
                             child: Container(
                               decoration: BoxDecoration(
                                 color: Colors.white,
@@ -164,7 +212,10 @@ class _ProfileState extends State<Profile> {
               ),
             ),
             SizedBox(height: 30),
-            _buildSignOutButton(),
+            GestureDetector(
+              onTap: () => _signOut(context),
+              child: _buildSignOutButton(),
+            )
           ],
         ),
       ),

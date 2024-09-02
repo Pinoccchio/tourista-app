@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'SQLiteDatabaseHelper.dart';
 import 'static_users.dart'; // Import the User class
 
 class FirestoreDatabaseHelper {
@@ -43,13 +42,17 @@ class FirestoreDatabaseHelper {
     bool anyUploaded = false; // Flag to check if any user is uploaded
 
     for (var user in staticUsers) {
-      var userDoc = await _usersCollection.doc(user.studentNumber).get();
-      if (!userDoc.exists) {
-        await _usersCollection.doc(user.studentNumber).set(user.toMap());
-        print('Uploaded user: ${user.studentNumber}');
-        anyUploaded = true; // Mark that at least one user was uploaded
-      } else {
-        print('User already exists: ${user.studentNumber}');
+      try {
+        var userDoc = await _usersCollection.doc(user.studentNumber).get();
+        if (!userDoc.exists) {
+          await _usersCollection.doc(user.studentNumber).set(user.toMap());
+          print('Uploaded user: ${user.studentNumber}');
+          anyUploaded = true; // Mark that at least one user was uploaded
+        } else {
+          print('User already exists: ${user.studentNumber}');
+        }
+      } catch (e) {
+        print('Failed to upload user ${user.studentNumber}: $e');
       }
     }
 
@@ -62,41 +65,41 @@ class FirestoreDatabaseHelper {
 
   // Method to fetch users from Firestore
   static Future<List<User>> fetchUsersFromFirestore() async {
-    QuerySnapshot querySnapshot = await _usersCollection.get();
-    return querySnapshot.docs.map((doc) {
-      Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-      return User.fromMap(data);
-    }).toList();
-  }
-
-  // Method to load users from SQLite
-  static Future<List<User>> loadUsersFromSQLite() async {
-    return await SQLDatabaseHelper.instance.getAllUsers();
-  }
-
-  // Method to sync local data (SQLite) to Firestore
-  static Future<void> syncLocalDataToFirestore() async {
-    List<User> localUsers = await loadUsersFromSQLite();
-    for (var user in localUsers) {
-      String userId = user.studentNumber; // Assuming studentNumber is the unique identifier
-      await _usersCollection.doc(userId).set(user.toMap(), SetOptions(merge: true));
+    try {
+      QuerySnapshot querySnapshot = await _usersCollection.get();
+      return querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return User.fromMap(data);
+      }).toList();
+    } catch (e) {
+      print('Failed to fetch users: $e');
+      return [];
     }
   }
 
   // Method to get a user's profile picture URL from Firestore
   static Future<String?> getProfilePictureUrl(String studentNumber) async {
-    var userDoc = await _usersCollection.doc(studentNumber).get();
-    if (userDoc.exists) {
-      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
-      return data['profilePictureUrl'] as String?;
+    try {
+      var userDoc = await _usersCollection.doc(studentNumber).get();
+      if (userDoc.exists) {
+        Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+        return data['profilePictureUrl'] as String?;
+      }
+    } catch (e) {
+      print('Failed to get profile picture for $studentNumber: $e');
     }
     return null;
   }
 
   // Method to update a user's profile picture URL in Firestore
   static Future<void> updateProfilePictureUrl(String studentNumber, String url) async {
-    await _usersCollection.doc(studentNumber).update({
-      'profilePictureUrl': url,
-    });
+    try {
+      await _usersCollection.doc(studentNumber).update({
+        'profilePictureUrl': url,
+      });
+      print('Profile picture updated for $studentNumber');
+    } catch (e) {
+      print('Failed to update profile picture for $studentNumber: $e');
+    }
   }
 }
