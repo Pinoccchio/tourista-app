@@ -4,7 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../Database_Helper/SQLiteDatabaseHelper.dart';
+import '../Database_Helper/FirestoreHelper.dart';
 
 class SignInFilled extends StatefulWidget {
   @override
@@ -119,7 +119,7 @@ class _SignInFilledState extends State<SignInFilled> {
 
                         if (userDoc.exists) {
                           var user = userDoc.data()!;
-                          await SQLDatabaseHelper.instance.insertUser(user);
+                          await FirestoreHelper.instance.insertUser(user);
                           if (user['password'] == password) {
                             Fluttertoast.showToast(
                               msg: "Welcome, ${user['firstName']}",
@@ -131,7 +131,7 @@ class _SignInFilledState extends State<SignInFilled> {
                             );
                             Navigator.pushReplacementNamed(
                               context,
-                              '/home', // Update with your route name
+                              '/home',
                               arguments: {
                                 'firstName': user['firstName'],
                                 'lastName': user['lastName'],
@@ -171,7 +171,7 @@ class _SignInFilledState extends State<SignInFilled> {
                       }
                     } else {
                       // Check local database for user
-                      var user = await SQLDatabaseHelper.instance.getUser(studentNumber);
+                      var user = await FirestoreHelper.instance.getUser(studentNumber);
                       if (user != null && user['password'] == password) {
                         Fluttertoast.showToast(
                           msg: "Welcome, ${user['firstName']}",
@@ -183,7 +183,7 @@ class _SignInFilledState extends State<SignInFilled> {
                         );
                         Navigator.pushReplacementNamed(
                           context,
-                          '/home', // Update with your route name
+                          '/home',
                           arguments: {
                             'firstName': user['firstName'],
                             'lastName': user['lastName'],

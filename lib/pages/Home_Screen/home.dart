@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import '../Database_Helper/SQLiteDatabaseHelper.dart';
 import '../Database_Helper/static_users.dart';
 import 'custom_card.dart';
 import 'menu_item.dart'; // Corrected import for menu_item.dart
@@ -28,12 +30,14 @@ class _HomeState extends State<Home> {
   ];
 
   List<String> _filteredItems = [];
+  String? _profileImageUrl;
 
   @override
   void initState() {
     super.initState();
     _filteredItems = _items; // Initialize filtered items
     _searchController.addListener(_filterItems);
+    _listenForUserData(); // Listen for real-time updates
   }
 
   @override
@@ -47,6 +51,33 @@ class _HomeState extends State<Home> {
       _filteredItems = _items
           .where((item) => item.toLowerCase().contains(_searchController.text.toLowerCase()))
           .toList();
+    });
+  }
+
+  void _listenForUserData() {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.user.studentNumber)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        var user = snapshot.data()!;
+        setState(() {
+          _profileImageUrl = user['profilePictureUrl']; // Get profile picture URL
+        });
+        // Optionally, sync with local SQLite database
+        SQLDatabaseHelper.instance.insertUser(user);
+      } else {
+        // Handle the case where the document does not exist
+        Fluttertoast.showToast(
+          msg: "User data does not exist.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0,
+        );
+      }
     });
   }
 
@@ -115,18 +146,16 @@ class _HomeState extends State<Home> {
         ),
         GestureDetector(
           onTap: () {
-            // Navigate to the profile page
-            Navigator.pushNamed(context, '/profile');
-
-            // Optional: You can keep the toast message if you want
-            Fluttertoast.showToast(
-              msg: "Icon is Clicked",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: const Color(0xFF73CBE6),
-              textColor: Colors.white,
-              fontSize: 16.0,
+            // Navigate to the profile page with user data as arguments
+            Navigator.pushNamed(
+              context,
+              '/profile',
+              arguments: {
+                'firstName': widget.user.firstName,
+                'lastName': widget.user.lastName,
+                'studentNumber': widget.user.studentNumber,
+                'profilePictureUrl': _profileImageUrl, // Pass profile picture URL
+              },
             );
           },
           child: SizedBox(

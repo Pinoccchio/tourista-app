@@ -1,8 +1,59 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'Database_Helper/FirestoreDatabaseHelper.dart';
+import 'Database_Helper/static_users.dart';
 
-class Profile extends StatelessWidget {
+class Profile extends StatefulWidget {
+  final User user;
+
+  const Profile({required this.user});
+
+  @override
+  _ProfileState createState() => _ProfileState();
+}
+
+class _ProfileState extends State<Profile> {
+  String? _profileImageUrl;
+  bool _isLoading = true; // Add a loading state
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _profileImageUrl = widget.user.profilePictureUrl;
+    _isLoading = false; // Data is already loaded from Home
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final profileImageUrl = await _uploadImageToFirestore(pickedFile);
+      setState(() {
+        _profileImageUrl = profileImageUrl;
+      });
+
+      // Update the profile picture URL in Firestore
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.user.studentNumber)
+          .update({'profilePictureUrl': profileImageUrl});
+    }
+  }
+
+  Future<String> _uploadImageToFirestore(XFile file) async {
+    final storageRef = FirebaseStorage.instance
+        .ref()
+        .child('profile_pictures/${widget.user.studentNumber}.jpg');
+    await storageRef.putFile(File(file.path)); // Correct usage of File
+    return await storageRef.getDownloadURL();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +105,7 @@ class Profile extends StatelessWidget {
                       children: [
                         SizedBox(height: 20), // Space for profile image
                         Text(
-                          'John Doe',
+                          '${widget.user.firstName} ${widget.user.lastName}',
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w600,
                             fontSize: 24,
@@ -62,7 +113,7 @@ class Profile extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'John01',
+                          widget.user.studentNumber,
                           style: GoogleFonts.poppins(
                             fontWeight: FontWeight.w400,
                             fontSize: 16,
@@ -70,7 +121,7 @@ class Profile extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20),
-                        _buildProfileDetail('Student Number', 'John@example.com'),
+                        _buildProfileDetail('Student Number', widget.user.studentNumber),
                       ],
                     ),
                   ),
@@ -81,21 +132,28 @@ class Profile extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 50,
-                          backgroundImage: AssetImage('assets/images/ellipse_68.png'),
+                          backgroundImage: _isLoading
+                              ? AssetImage('assets/images/placeholder.png') as ImageProvider
+                              : (_profileImageUrl != null
+                              ? NetworkImage(_profileImageUrl!)
+                              : AssetImage('assets/images/placeholder.png') as ImageProvider),
                         ),
                         Positioned(
                           bottom: 0,
                           right: 0,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            padding: EdgeInsets.all(8),
-                            child: SvgPicture.asset(
-                              'assets/vectors/vector_63_x2.svg',
-                              width: 24,
-                              height: 24,
+                          child: GestureDetector(
+                            onTap: _pickImage, // Trigger the image picker
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              padding: EdgeInsets.all(8),
+                              child: SvgPicture.asset(
+                                'assets/vectors/vector_63_x2.svg',
+                                width: 24,
+                                height: 24,
+                              ),
                             ),
                           ),
                         ),
@@ -115,7 +173,7 @@ class Profile extends StatelessWidget {
 
   Widget _buildProfileDetail(String label, String value) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center, // Center-align the details
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           label,

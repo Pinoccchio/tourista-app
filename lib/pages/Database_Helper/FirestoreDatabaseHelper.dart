@@ -82,4 +82,21 @@ class FirestoreDatabaseHelper {
       await _usersCollection.doc(userId).set(user.toMap(), SetOptions(merge: true));
     }
   }
+
+  // Method to get a user's profile picture URL from Firestore
+  static Future<String?> getProfilePictureUrl(String studentNumber) async {
+    var userDoc = await _usersCollection.doc(studentNumber).get();
+    if (userDoc.exists) {
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+      return data['profilePictureUrl'] as String?;
+    }
+    return null;
+  }
+
+  // Method to update a user's profile picture URL in Firestore
+  static Future<void> updateProfilePictureUrl(String studentNumber, String url) async {
+    await _usersCollection.doc(studentNumber).update({
+      'profilePictureUrl': url,
+    });
+  }
 }
