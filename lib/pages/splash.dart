@@ -20,7 +20,19 @@ class _SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();
-    _checkUserSession();
+    _checkInternetConnectionAndProceed();
+  }
+
+  // Check for internet connection and proceed based on its availability
+  Future<void> _checkInternetConnectionAndProceed() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.wifi)) {
+      // Internet is available, proceed with user session check
+      _checkUserSession();
+    } else {
+      // No internet connection, show a message and close the app
+      _showNoInternetDialog();
+    }
   }
 
   // Check if the user is logged in and handle navigation
@@ -34,31 +46,13 @@ class _SplashState extends State<Splash> {
       // User is logged in, navigate to the home screen
       _navigateToHomeScreen(studentNumber, firstName, lastName);
     } else {
-      // Check if it's the first time and if there is internet connection
+      // Check if it's the first time and handle user registration
       bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
       if (isFirstTime) {
-        _checkInternetConnection(isFirstTime);
-      } else {
-        _checkInternetConnection(false); // No need to upload static users
-      }
-    }
-  }
-
-  // Ensure that the internet connection is available and upload static users if it's the first time
-  Future<void> _checkInternetConnection(bool isFirstTime) async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult != ConnectivityResult.none) {
-      // If there is an internet connection and it's the first time, upload static users
-      if (isFirstTime) {
         await _uploadStaticUsers();
-        SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isFirstTime', false); // Set isFirstTime to false after uploading
       }
       _navigateToSignInScreen();
-    } else {
-      print("No internet connection");
-      // If there is no internet connection, show a message and close the app
-      _showNoInternetDialog();
     }
   }
 
@@ -107,7 +101,6 @@ class _SplashState extends State<Splash> {
       ),
     );
   }
-
 
   // Show no internet connection dialog
   void _showNoInternetDialog() {
