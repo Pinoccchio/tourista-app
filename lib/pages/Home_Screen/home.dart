@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import '../Database_Helper/static_users.dart';
+import '../text_to_speech.dart';
 import 'custom_card.dart';
 import 'menu_item.dart';
 
@@ -116,7 +116,7 @@ class _HomeState extends State<Home> {
             const SizedBox(height: 24),
             _buildMenuTitle(),
             const SizedBox(height: 16),
-            _buildMenuItems(),
+            _buildMenuItems(context),
             const SizedBox(height: 32),
             _buildTranscriptionsTitle(),
             const SizedBox(height: 10),
@@ -239,7 +239,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget _buildMenuItems() {
+  Widget _buildMenuItems(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -248,13 +248,23 @@ class _HomeState extends State<Home> {
           label: 'Study Planner',
         ),
         const SizedBox(width: 16),
-        MenuItem(
-          iconPath: 'assets/animated_icon/animated-microphone.json',
-          label: 'Text-To-Speech',
+        GestureDetector(
+          onTap: () {
+            // Navigate to TextToSpeechScreen when tapped
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => TextToSpeech()),
+            );
+          },
+          child: MenuItem(
+            iconPath: 'assets/animated_icon/animated-microphone.json',
+            label: 'Text-To-Speech',
+          ),
         ),
       ],
     );
   }
+
 
   Widget _buildTranscriptionsTitle() {
     return Align(

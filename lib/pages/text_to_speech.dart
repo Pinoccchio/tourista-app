@@ -1,600 +1,391 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_app/utils.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-class TextToSpeech extends StatelessWidget {
+class TextToSpeech extends StatefulWidget {
+  @override
+  _TextToSpeechState createState() => _TextToSpeechState();
+}
+
+class _TextToSpeechState extends State<TextToSpeech> {
+  List<UploadedFile> uploadedFiles = [];
+
   @override
   Widget build(BuildContext context) {
-    return 
-    Container(
-      decoration: BoxDecoration(
-        color: Color(0xFF000000),
-        borderRadius: BorderRadius.circular(40),
+    return Scaffold(
+      backgroundColor: const Color(0xFF000000),
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+        title: Text(
+          'Text-To-Speech',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
       ),
-      child: Container(
-        padding: EdgeInsets.fromLTRB(0, 0, 0, 8),
-        child: Stack(
-          clipBehavior: Clip.none,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 14),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF000000),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(25, 13, 14.3, 14),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(10.1, 0, 0, 21),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Stack(
-                                    children: [
-                                      Text(
-                                        '9:41',
-                                        style: GoogleFonts.getFont(
-                                          'Roboto Condensed',
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 15,
-                                          height: 1.3,
-                                          letterSpacing: -0.2,
-                                          color: Color(0xFFFFFFFF),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        bottom: 0,
-                                        child: Container(
-                                          height: 21,
-                                          child: Text(
-                                            '9:41',
-                                            style: GoogleFonts.getFont(
-                                              'Roboto Condensed',
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 15,
-                                              height: 1.3,
-                                              letterSpacing: -0.2,
-                                              color: Color(0xFFFFFFFF),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.fromLTRB(0, 4.3, 0, 4.3),
-                                    child: SizedBox(
-                                      width: 66.7,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            margin: EdgeInsets.fromLTRB(0, 0.3, 5, 0.3),
-                                            child: SizedBox(
-                                              width: 17,
-                                              height: 10.7,
-                                              child: SvgPicture.asset(
-                                                'assets/vectors/container_11_x2.svg',
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            margin: EdgeInsets.fromLTRB(0, 0, 5, 0.3),
-                                            child: SizedBox(
-                                              width: 15.3,
-                                              height: 11,
-                                              child: SvgPicture.asset(
-                                                'assets/vectors/container_14_x2.svg',
-                                              ),
-                                            ),
-                                          ),
-                                          Container(
-                                            margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                            child: SizedBox(
-                                              width: 24.3,
-                                              height: 11.3,
-                                              child: SvgPicture.asset(
-                                                'assets/vectors/container_24_x2.svg',
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Align(
-                              alignment: Alignment.topLeft,
-                              child: SizedBox(
-                                width: 229.7,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-                                      width: 24,
-                                      height: 24,
-                                      child: SizedBox(
-                                        width: 6,
-                                        height: 12,
-                                        child: SvgPicture.asset(
-                                          'assets/vectors/vector_42_x2.svg',
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      'Text-To-Speech',
-                                      style: GoogleFonts.getFont(
-                                        'Poppins',
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                        height: 1.3,
-                                        color: Color(0xFFFFFFFF),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+            FileUploadWidget(onFilePicked: (result) {
+              if (result != null) {
+                PlatformFile file = result.files.first;
+                _handleFileSelection(context, file);
+              }
+            }),
+            const SizedBox(height: 20),
+            // Display uploaded file containers
+            ...uploadedFiles.map((file) => FileContainer(
+              fileName: file.fileName,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FileDetailsPage(
+                      fileName: file.fileName,
+                      extractedText: file.extractedText,
                     ),
                   ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(18, 0, 14, 123),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF171717),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(14, 20, 32, 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 12),
-                                  child: Align(
-                                    alignment: Alignment.topLeft,
-                                    child: Text(
-                                      'Upload File',
-                                      style: GoogleFonts.getFont(
-                                        'Poppins',
-                                        fontWeight: FontWeight.w700,
-                                        fontSize: 16,
-                                        height: 1.3,
-                                        color: Color(0xFFFFFFFF),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                Text(
-                                  'PDF or Word File',
-                                  style: GoogleFonts.getFont(
-                                    'Poppins',
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 14,
-                                    height: 1.1,
-                                    color: Color(0xFF949494),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 6, 0, 8),
-                              child: SizedBox(
-                                width: 36,
-                                height: 34,
-                                child: SvgPicture.asset(
-                                  'assets/vectors/upload_x2.svg',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(16, 0, 16, 23),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF171717),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Stack(
-                        children: [
-                        Positioned(
-                          top: 1,
-                          child: SizedBox(
-                            width: 343,
-                            height: 138.9,
-                            child: SvgPicture.asset(
-                              'assets/vectors/group_x2.svg',
-                            ),
-                          ),
-                        ),
-                  SizedBox(
-                            width: 343,
-                            child: Container(
-                              padding: EdgeInsets.fromLTRB(8.1, 8, 8.1, 126),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    margin: EdgeInsets.fromLTRB(0, 0, 8, 0),
-                                    child: SizedBox(
-                                      width: 33,
-                                      child: Text(
-                                        '00:45',
-                                        style: GoogleFonts.getFont(
-                                          'Poppins',
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: 12,
-                                          height: 1.3,
-                                          color: Color(0xFFFFFFFF),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Text(
-                                    '05:00',
-                                    style: GoogleFonts.getFont(
-                                      'Poppins',
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: 12,
-                                      height: 1.3,
-                                      color: Color(0xFFFFFFFF),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(1, 0, 0, 34),
-                    child: SizedBox(
-                      width: 262,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0, 40.6, 0, 40.6),
-                            width: 40,
-                            height: 40,
-                            child: SizedBox(
-                              width: 40,
-                              height: 28.9,
-                              child: SvgPicture.asset(
-                                'assets/vectors/vector_x2.svg',
-                              ),
-                            ),
-                          ),
-                          Container(
-                            width: 110,
-                            height: 110,
-                            child: SizedBox(
-                              width: 110,
-                              height: 110,
-                              child: SvgPicture.asset(
-                                'assets/vectors/group_2_x2.svg',
-                              ),
-                            ),
-                          ),
-                          Container(
-                            margin: EdgeInsets.fromLTRB(0, 40.6, 0, 40.6),
-                            width: 40,
-                            height: 40,
-                            child: SizedBox(
-                              width: 40,
-                              height: 28.9,
-                              child: SvgPicture.asset(
-                                'assets/vectors/vector_9_x2.svg',
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(16.3, 0, 16.4, 41),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                          child: SizedBox(
-                            width: 59,
-                            child: Text(
-                              'Repeat',
-                              style: GoogleFonts.getFont(
-                                'Poppins',
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                                height: 1.3,
-                                color: Color(0xFFFFFFFF),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Text(
-                          'x 0.5',
-                          style: GoogleFonts.getFont(
-                            'Poppins',
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                            height: 1.3,
-                            color: Color(0xFFFFFFFF),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(18, 0, 14, 36),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF171717),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Container(
-                        padding: EdgeInsets.fromLTRB(16, 16, 16, 13),
-                        child: Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            SizedBox(
-                              width: double.infinity,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        margin: EdgeInsets.fromLTRB(0, 0, 16, 3),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(25),
-                                          child: SizedBox(
-                                            width: 48,
-                                            height: 48,
-                                            child: SvgPicture.asset(
-                                              'assets/vectors/rectangle_10_x2.svg',
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Container(
-                                            margin: EdgeInsets.fromLTRB(0, 0, 0, 12),
-                                            child: Align(
-                                              alignment: Alignment.topLeft,
-                                              child: Text(
-                                                'Voice 04',
-                                                style: GoogleFonts.getFont(
-                                                  'Poppins',
-                                                  fontWeight: FontWeight.w700,
-                                                  fontSize: 16,
-                                                  height: 1.3,
-                                                  color: Color(0xFFFFFFFF),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          RichText(
-                                            text: TextSpan(
-                                              text: '00:03:00 ',
-                                              style: GoogleFonts.getFont(
-                                                'Poppins',
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 14,
-                                                height: 1.1,
-                                                color: Color(0xFF949494),
-                                              ),
-                                              children: [
-                                                TextSpan(
-                                                  text: '|',
-                                                  style: GoogleFonts.getFont(
-                                                    'Poppins',
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 14,
-                                                    height: 1.3,
-                                                    color: Color(0xFF73CBE6),
-                                                  ),
-                                                ),
-                                                TextSpan(
-                                                  text: ' 407 Words',
-                                                  style: GoogleFonts.getFont(
-                                                    'Poppins',
-                                                    fontWeight: FontWeight.w400,
-                                                    fontSize: 14,
-                                                    height: 1.1,
-                                                    color: Color(0xFF949494),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    margin: EdgeInsets.fromLTRB(0, 4, 0, 3),
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.end,
-                                      children: [
-                                        Container(
-                                          margin: EdgeInsets.fromLTRB(11, 0, 11, 12),
-                                          child: SizedBox(
-                                            width: 24,
-                                            child: Column(
-                                              mainAxisAlignment: MainAxisAlignment.start,
-                                              crossAxisAlignment: CrossAxisAlignment.center,
-                                              children: [
-                                                Container(
-                                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
-                                                  child: SizedBox(
-                                                    width: 2,
-                                                    height: 2,
-                                                    child: SvgPicture.asset(
-                                                      'assets/vectors/vector_84_x2.svg',
-                                                    ),
-                                                  ),
-                                                ),
-                                                Container(
-                                                  margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
-                                                  child: SizedBox(
-                                                    width: 2,
-                                                    height: 2,
-                                                    child: SvgPicture.asset(
-                                                      'assets/vectors/vector_37_x2.svg',
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: 2,
-                                                  height: 2,
-                                                  child: SvgPicture.asset(
-                                                    'assets/vectors/vector_54_x2.svg',
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          'Feb 10',
-                                          style: GoogleFonts.getFont(
-                                            'Poppins',
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: 12,
-                                            height: 1.3,
-                                            color: Color(0xFF949494),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Positioned(
-                              left: 13,
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                child: SizedBox(
-                                  width: 22,
-                                  height: 16,
-                                  child: SvgPicture.asset(
-                                    'assets/vectors/vector_7_x2.svg',
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(1, 0, 0, 0),
-                    width: 375,
-                    height: 34,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFFFFFFF),
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Container(
-                        width: 134,
-                        height: 5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleFileSelection(BuildContext context, PlatformFile file) async {
+    Uint8List? fileBytes = file.bytes;
+    if (fileBytes != null) {
+      if (file.extension == 'pdf') {
+        _extractAllText(context, fileBytes, file.name);
+      } else if (file.extension == 'doc' || file.extension == 'docx') {
+        await _launchConversionUrl(context);
+      } else {
+        print('Unsupported file type');
+      }
+    } else {
+      try {
+        File pickedFile = File(file.path!);
+        fileBytes = await pickedFile.readAsBytes();
+        if (file.extension == 'pdf') {
+          _extractAllText(context, fileBytes, file.name);
+        } else if (file.extension == 'doc' || file.extension == 'docx') {
+          await _launchConversionUrl(context);
+        }
+      } catch (e) {
+        print('Error reading file: $e');
+      }
+    }
+  }
+
+  Future<void> _extractAllText(BuildContext context, Uint8List fileBytes, String fileName) async {
+    try {
+      PdfDocument document = PdfDocument(inputBytes: fileBytes);
+      PdfTextExtractor extractor = PdfTextExtractor(document);
+      String text = extractor.extractText();
+
+      setState(() {
+        // Add a new file container with extracted text
+        uploadedFiles.add(
+          UploadedFile(
+            fileName: fileName,
+            extractedText: text,
+          ),
+        );
+      });
+    } catch (e) {
+      print('Error extracting text: $e');
+    }
+  }
+
+  Future<void> _launchConversionUrl(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('The selected file is a Word document. Convert it to PDF. Redirecting...'),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 6),
+      ),
+    );
+
+    await Future.delayed(const Duration(seconds: 6));
+
+    const url = 'https://www.ilovepdf.com/word_to_pdf';
+    Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+}
+
+class UploadedFile {
+  final String fileName;
+  final String extractedText;
+
+  UploadedFile({required this.fileName, required this.extractedText});
+}
+
+class FileUploadWidget extends StatelessWidget {
+  final Function(FilePickerResult?) onFilePicked;
+
+  FileUploadWidget({required this.onFilePicked});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        FilePickerResult? result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['pdf', 'doc', 'docx'],
+        );
+        onFilePicked(result);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Upload File', style: TextStyle(color: Colors.white)),
+                Text('PDF or Word File', style: TextStyle(color: Colors.grey)),
+              ],
             ),
-            Positioned(
-              top: 235,
-              child: SizedBox(
-                height: 36,
-                child: RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: GoogleFonts.getFont(
-                      'Poppins',
-                      fontWeight: FontWeight.w500,
-                      fontSize: 48,
-                      height: 0.8,
-                      color: Color(0xFF73CBE6),
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '00:0',
-                        style: GoogleFonts.getFont(
-                          'Poppins',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 48,
-                          height: 1.3,
-                          color: Color(0xFF949494),
-                        ),
-                      ),
-                      TextSpan(
-                        text: '6.10',
-                        style: GoogleFonts.getFont(
-                          'Poppins',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 48,
-                          height: 0.8,
-                          color: Color(0xFF73CBE6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            const Icon(Icons.file_upload, color: Colors.white),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FileContainer extends StatelessWidget {
+  final String fileName;
+  final VoidCallback onTap;
+
+  FileContainer({required this.fileName, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.grey[900],
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.insert_drive_file, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                fileName,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.white),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class FileDetailsPage extends StatefulWidget {
+  final String fileName;
+  final String extractedText;
+
+  FileDetailsPage({required this.fileName, required this.extractedText});
+
+  @override
+  _FileDetailsPageState createState() => _FileDetailsPageState();
+}
+
+class _FileDetailsPageState extends State<FileDetailsPage> {
+  double _playbackSpeed = 1.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF000000), // Black background
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+        title: Text(
+          widget.fileName,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+            color: Colors.white, // White text
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  widget.extractedText.isNotEmpty ? widget.extractedText : 'No text available.',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 14,
+                    color: Colors.white, // White text
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ControlButtonsSection(
+              onPlay: () {
+                // Implement text-to-speech playback functionality
+                print('Playing at speed $_playbackSpeed');
+              },
+              onRewind: () {
+                // Implement rewind functionality
+              },
+              onForward: () {
+                // Implement forward functionality
+              },
+              onSpeedChanged: (speed) {
+                setState(() {
+                  _playbackSpeed = speed ?? 1.0;
+                });
+              },
+              currentSpeed: _playbackSpeed,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ControlButtonsSection extends StatelessWidget {
+  final void Function() onPlay;
+  final void Function() onRewind;
+  final void Function() onForward;
+  final ValueChanged<double?> onSpeedChanged;
+  final double currentSpeed;
+
+  ControlButtonsSection({
+    required this.onPlay,
+    required this.onRewind,
+    required this.onForward,
+    required this.onSpeedChanged,
+    required this.currentSpeed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.replay_10, size: 36, color: Colors.white),
+              onPressed: onRewind,
+            ),
+            IconButton(
+              icon: const Icon(Icons.play_arrow, size: 50, color: Color(0xFF73CBE6)),
+              onPressed: onPlay,
+            ),
+            IconButton(
+              icon: const Icon(Icons.forward_10, size: 36, color: Colors.white),
+              onPressed: onForward,
+            ),
+          ],
+        ),
+        const SizedBox(height: 20), // Space between button section and speed control
+        PlaybackSpeedControl(
+          onSpeedChanged: onSpeedChanged,
+          currentSpeed: currentSpeed,
+        ),
+      ],
+    );
+  }
+}
+
+class PlaybackSpeedControl extends StatelessWidget {
+  final ValueChanged<double?> onSpeedChanged;
+  final double currentSpeed;
+
+  PlaybackSpeedControl({
+    required this.onSpeedChanged,
+    required this.currentSpeed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Speed: ${currentSpeed}x',
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w400,
+            fontSize: 16,
+            color: Colors.white, // White text
+          ),
+        ),
+        const SizedBox(width: 20),
+        DropdownButton<double?>(
+          value: currentSpeed,
+          items: [0.5, 1.0, 1.5, 2.0].map((speed) {
+            return DropdownMenuItem<double?>(
+              value: speed,
+              child: Text(
+                '${speed}x',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: Colors.white, // White text
+                ),
+              ),
+            );
+          }).toList(),
+          onChanged: onSpeedChanged,
+          dropdownColor: Colors.grey[800],
+          underline: SizedBox(),
+        ),
+      ],
     );
   }
 }

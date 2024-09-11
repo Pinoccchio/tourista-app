@@ -7,9 +7,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:lottie/lottie.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'dart:async';
 import 'Database_Helper/FirestoreDatabaseHelper.dart';
 import 'Home_Screen/home.dart'; // For storing preferences
+import 'package:http/http.dart' as http;
 
 class Splash extends StatefulWidget {
   @override
@@ -26,14 +27,53 @@ class _SplashState extends State<Splash> {
   // Check for internet connection and proceed based on its availability
   Future<void> _checkInternetConnectionAndProceed() async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult.contains(ConnectivityResult.wifi)) {
+
+    // Check connectivity type
+    if (connectivityResult.contains(ConnectivityResult.mobile)) {
+      print('Connected via Mobile Data');
+    } else if (connectivityResult.contains(ConnectivityResult.wifi)) {
+      print('Connected via WiFi');
+    } else {
+      print('No internet connection');
+      _showNoInternetDialog();
+      return; // Exit the function if no connection
+    }
+
+    // Check if the internet is actually working
+    bool isInternetAvailable = await _checkInternetAvailability();
+    if (isInternetAvailable) {
       // Internet is available, proceed with user session check
       _checkUserSession();
     } else {
-      // No internet connection, show a message and close the app
+      // Internet connection is present but no access, show a message
       _showNoInternetDialog();
     }
   }
+
+
+  Future<bool> _checkInternetAvailability() async {
+    try {
+      print('Attempting to check internet availability...');
+      final response = await http.get(Uri.parse('https://www.google.com')).timeout(Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        print('Internet is available.');
+        return true;
+      } else {
+        print('No internet access detected, status code: ${response.statusCode}');
+        return false;
+      }
+    } on TimeoutException catch (_) {
+      print('TimeoutException: No internet access or request timed out.');
+      return false;
+    } catch (e) {
+      print('Exception: $e');
+      return false;
+    }
+  }
+
+
+
 
   // Check if the user is logged in and handle navigation
   Future<void> _checkUserSession() async {
@@ -146,10 +186,11 @@ class _SplashState extends State<Splash> {
             // Centered logo
             Center(
               child: SizedBox(
-                width: 213,
-                height: 38.9,
-                child: SvgPicture.asset(
-                  'assets/vectors/group_33398_x2.svg',
+                width: 250,
+                height: 45,
+                child: Image.asset(
+                  'assets/images/sample_logo.png',
+                  fit: BoxFit.contain, // Adjust as needed for your layout
                 ),
               ),
             ),
