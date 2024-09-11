@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:syncfusion_flutter_pdf/pdf.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TextToSpeech extends StatefulWidget {
@@ -26,7 +26,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to the previous screen
+            Navigator.pop(context);
           },
         ),
         title: Text(
@@ -60,7 +60,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
                   MaterialPageRoute(
                     builder: (context) => FileDetailsPage(
                       fileName: file.fileName,
-                      extractedText: file.extractedText,
+                      fileBytes: file.fileBytes,
                     ),
                   ),
                 );
@@ -74,9 +74,15 @@ class _TextToSpeechState extends State<TextToSpeech> {
 
   Future<void> _handleFileSelection(BuildContext context, PlatformFile file) async {
     Uint8List? fileBytes = file.bytes;
+
     if (fileBytes != null) {
       if (file.extension == 'pdf') {
-        _extractAllText(context, fileBytes, file.name);
+        setState(() {
+          uploadedFiles.add(UploadedFile(
+            fileName: file.name,
+            fileBytes: fileBytes!,
+          ));
+        });
       } else if (file.extension == 'doc' || file.extension == 'docx') {
         await _launchConversionUrl(context);
       } else {
@@ -86,34 +92,24 @@ class _TextToSpeechState extends State<TextToSpeech> {
       try {
         File pickedFile = File(file.path!);
         fileBytes = await pickedFile.readAsBytes();
-        if (file.extension == 'pdf') {
-          _extractAllText(context, fileBytes, file.name);
-        } else if (file.extension == 'doc' || file.extension == 'docx') {
-          await _launchConversionUrl(context);
+
+        if (fileBytes != null) {
+          if (file.extension == 'pdf') {
+            setState(() {
+              uploadedFiles.add(UploadedFile(
+                fileName: file.name,
+                fileBytes: fileBytes!,
+              ));
+            });
+          } else if (file.extension == 'doc' || file.extension == 'docx') {
+            await _launchConversionUrl(context);
+          }
+        } else {
+          print('Error: fileBytes is null');
         }
       } catch (e) {
         print('Error reading file: $e');
       }
-    }
-  }
-
-  Future<void> _extractAllText(BuildContext context, Uint8List fileBytes, String fileName) async {
-    try {
-      PdfDocument document = PdfDocument(inputBytes: fileBytes);
-      PdfTextExtractor extractor = PdfTextExtractor(document);
-      String text = extractor.extractText();
-
-      setState(() {
-        // Add a new file container with extracted text
-        uploadedFiles.add(
-          UploadedFile(
-            fileName: fileName,
-            extractedText: text,
-          ),
-        );
-      });
-    } catch (e) {
-      print('Error extracting text: $e');
     }
   }
 
@@ -122,11 +118,11 @@ class _TextToSpeechState extends State<TextToSpeech> {
       SnackBar(
         content: const Text('The selected file is a Word document. Convert it to PDF. Redirecting...'),
         backgroundColor: Colors.red,
-        duration: const Duration(seconds: 6),
+        duration: const Duration(seconds: 5),
       ),
     );
 
-    await Future.delayed(const Duration(seconds: 6));
+    await Future.delayed(const Duration(seconds: 5));
 
     const url = 'https://www.ilovepdf.com/word_to_pdf';
     Uri uri = Uri.parse(url);
@@ -140,9 +136,9 @@ class _TextToSpeechState extends State<TextToSpeech> {
 
 class UploadedFile {
   final String fileName;
-  final String extractedText;
+  final Uint8List fileBytes;
 
-  UploadedFile({required this.fileName, required this.extractedText});
+  UploadedFile({required this.fileName, required this.fileBytes});
 }
 
 class FileUploadWidget extends StatelessWidget {
@@ -220,28 +216,50 @@ class FileContainer extends StatelessWidget {
 
 class FileDetailsPage extends StatefulWidget {
   final String fileName;
-  final String extractedText;
+  final Uint8List fileBytes;
 
-  FileDetailsPage({required this.fileName, required this.extractedText});
+  FileDetailsPage({required this.fileName, required this.fileBytes});
 
   @override
   _FileDetailsPageState createState() => _FileDetailsPageState();
 }
 
 class _FileDetailsPageState extends State<FileDetailsPage> {
-  double _playbackSpeed = 1.0;
+  double _playbackSpeed = 0.5;
+  bool _isPlaying = false;
+  PdfViewerController _pdfViewerController = PdfViewerController();
+  final FlutterTts _flutterTts = FlutterTts();
+  String _selectedText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _flutterTts.setSpeechRate(_playbackSpeed);
+    _flutterTts.setCompletionHandler(() {
+      setState(() {
+        _isPlaying = false;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF000000), // Black background
+      backgroundColor: const Color(0xFF000000),
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () {
-            Navigator.pop(context); // Navigate back to the previous screen
+            _flutterTts.stop();
+            Navigator.pop(context);
           },
         ),
         title: Text(
@@ -249,7 +267,7 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
             fontSize: 20,
-            color: Colors.white, // White text
+            color: Colors.white,
           ),
         ),
         centerTitle: true,
@@ -257,38 +275,51 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Text(
-                  widget.extractedText.isNotEmpty ? widget.extractedText : 'No text available.',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 14,
-                    color: Colors.white, // White text
-                  ),
-                ),
+              child: SfPdfViewer.memory(
+                widget.fileBytes,
+                controller: _pdfViewerController,
+                enableTextSelection: true,
+                onTextSelectionChanged: (PdfTextSelectionChangedDetails details) {
+                  setState(() {
+                    _selectedText = details.selectedText ?? '';
+                    print(_selectedText);
+                  });
+                },
               ),
             ),
             const SizedBox(height: 20),
             ControlButtonsSection(
-              onPlay: () {
-                // Implement text-to-speech playback functionality
-                print('Playing at speed $_playbackSpeed');
-              },
-              onRewind: () {
-                // Implement rewind functionality
-              },
-              onForward: () {
-                // Implement forward functionality
+              onPlayPause: () {
+                if (_isPlaying) {
+                  _flutterTts.stop();
+                } else {
+                  if (_selectedText.isNotEmpty) {
+                    _flutterTts.speak(_selectedText);
+                  } else {
+                    _flutterTts.speak("There is no text selected to read.");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text("There is no text selected to read."),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 3),
+                      ),
+                    );
+                  }
+                }
+                setState(() {
+                  _isPlaying = !_isPlaying;
+                });
               },
               onSpeedChanged: (speed) {
                 setState(() {
-                  _playbackSpeed = speed ?? 1.0;
+                  _playbackSpeed = speed ?? 0.5;
+                  _flutterTts.setSpeechRate(_playbackSpeed);
                 });
               },
               currentSpeed: _playbackSpeed,
+              isPlaying: _isPlaying,
             ),
           ],
         ),
@@ -298,18 +329,16 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
 }
 
 class ControlButtonsSection extends StatelessWidget {
-  final void Function() onPlay;
-  final void Function() onRewind;
-  final void Function() onForward;
+  final void Function() onPlayPause;
   final ValueChanged<double?> onSpeedChanged;
   final double currentSpeed;
+  final bool isPlaying;
 
   ControlButtonsSection({
-    required this.onPlay,
-    required this.onRewind,
-    required this.onForward,
+    required this.onPlayPause,
     required this.onSpeedChanged,
     required this.currentSpeed,
+    required this.isPlaying,
   });
 
   @override
@@ -317,23 +346,19 @@ class ControlButtonsSection extends StatelessWidget {
     return Column(
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: const Icon(Icons.replay_10, size: 36, color: Colors.white),
-              onPressed: onRewind,
-            ),
-            IconButton(
-              icon: const Icon(Icons.play_arrow, size: 50, color: Color(0xFF73CBE6)),
-              onPressed: onPlay,
-            ),
-            IconButton(
-              icon: const Icon(Icons.forward_10, size: 36, color: Colors.white),
-              onPressed: onForward,
+              icon: Icon(
+                isPlaying ? Icons.pause : Icons.play_arrow,
+                size: 50,
+                color: isPlaying ? Colors.red : Color(0xFF73CBE6),
+              ),
+              onPressed: onPlayPause,
             ),
           ],
         ),
-        const SizedBox(height: 20), // Space between button section and speed control
+        const SizedBox(height: 20),
         PlaybackSpeedControl(
           onSpeedChanged: onSpeedChanged,
           currentSpeed: currentSpeed,
@@ -362,7 +387,7 @@ class PlaybackSpeedControl extends StatelessWidget {
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w400,
             fontSize: 16,
-            color: Colors.white, // White text
+            color: Colors.white,
           ),
         ),
         const SizedBox(width: 20),
@@ -376,7 +401,7 @@ class PlaybackSpeedControl extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w400,
                   fontSize: 16,
-                  color: Colors.white, // White text
+                  color: Colors.white,
                 ),
               ),
             );
