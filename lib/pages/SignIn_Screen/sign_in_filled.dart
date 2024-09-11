@@ -55,8 +55,9 @@ class _SignInFilledState extends State<SignInFilled> {
                     SizedBox(
                       width: 213,
                       height: 38.9,
-                      child: SvgPicture.asset(
-                        'assets/vectors/group_333981_x2.svg',
+                      child: Image.asset(
+                        'assets/images/sample_logo.png',
+                        fit: BoxFit.contain, // Adjust as needed for your layout
                       ),
                     ),
                     const SizedBox(height: 20),
