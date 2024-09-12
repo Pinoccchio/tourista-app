@@ -92,7 +92,6 @@ class AppRoutes {
       signOut: (context) => SignOut(),
       studyPlanner: (context) => StudyPlanner(),
       studyPlanner1: (context) => StudyPlanner1(),
-      textToSpeech: (context) => TextToSpeech(),
       transcriptions: (context) => Transcriptions(),
     };
   }

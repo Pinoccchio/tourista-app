@@ -147,7 +147,7 @@ class _SplashState extends State<Splash> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFF1AADB6), // Set the background color of the dialog
+        backgroundColor: Colors.grey[800], // Set the background color of the dialog
         title: Text(
           'No Internet Connection',
           style: TextStyle(color: Colors.white), // Set the text color of the title
@@ -165,8 +165,8 @@ class _SplashState extends State<Splash> {
             },
             child: Text(
               'OK',
-              style: TextStyle(color: Colors.white), // Set the text color of the button
             ),
+            style: TextButton.styleFrom(foregroundColor: Colors.green),
           ),
         ],
       ),

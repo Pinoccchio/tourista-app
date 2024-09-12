@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import '../text_to_speech.dart';
-import 'custom_card.dart';
 import 'menu_item.dart';
 
 class Home extends StatefulWidget {
@@ -25,22 +25,12 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _items = [
-    'Design Inspiration',
-    'Food Recipe',
-    'UI Tips',
-    'Tech News',
-    'Flutter Guide',
-    'Web Dev Trends',
-  ];
-
-  List<String> _filteredItems = [];
   String? _profileImageUrl;
+  String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    _filteredItems = _items;
     _searchController.addListener(_filterItems);
 
     if (widget.studentNumber.isNotEmpty) {
@@ -64,11 +54,11 @@ class _HomeState extends State<Home> {
   }
 
   void _filterItems() {
-    setState(() {
-      _filteredItems = _items
-          .where((item) => item.toLowerCase().contains(_searchController.text.toLowerCase()))
-          .toList();
-    });
+    if (mounted) {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    }
   }
 
   void _listenForUserData() {
@@ -79,9 +69,11 @@ class _HomeState extends State<Home> {
         .listen((snapshot) {
       if (snapshot.exists) {
         var user = snapshot.data()!;
-        setState(() {
-          _profileImageUrl = user['profilePictureUrl'];
-        });
+        if (mounted) {
+          setState(() {
+            _profileImageUrl = user['profilePictureUrl'];
+          });
+        }
       } else {
         Fluttertoast.showToast(
           msg: "User data does not exist.",
@@ -250,10 +242,13 @@ class _HomeState extends State<Home> {
         const SizedBox(width: 16),
         GestureDetector(
           onTap: () {
-            // Navigate to TextToSpeechScreen when tapped
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => TextToSpeech()),
+              MaterialPageRoute(
+                builder: (context) => TextToSpeech(
+                  studentNumber: widget.studentNumber,
+                ),
+              ),
             );
           },
           child: MenuItem(
@@ -264,7 +259,6 @@ class _HomeState extends State<Home> {
       ],
     );
   }
-
 
   Widget _buildTranscriptionsTitle() {
     return Align(
@@ -283,7 +277,14 @@ class _HomeState extends State<Home> {
           ),
           GestureDetector(
             onTap: () {
-              // Implement navigation to "See all" transcriptions
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TextToSpeech(
+                    studentNumber: widget.studentNumber,
+                  ),
+                ),
+              );
             },
             child: Text(
               'See all',
@@ -302,22 +303,122 @@ class _HomeState extends State<Home> {
 
   Widget _buildTranscriptionsList() {
     return Expanded(
-      child: ListView.builder(
-        itemCount: _filteredItems.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: CustomCard(
-              title: _filteredItems[index],
-              time: '00:${(index + 3) * 2}:00',
-              words: '${(index + 1) * 400} Words',
-              date: 'Feb ${(index + 10)}',
-              profileIcon: 'assets/vectors/rectangle_4_x2.svg',
-              menuIcon: 'assets/animated_icon/vertical-anim-icon.json',
-            ),
+      child: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.studentNumber)
+            .collection('files')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return Center(child: Text('No files available.'));
+          }
+
+          final files = snapshot.data!.docs;
+
+          // Filter files based on search query
+          final filteredFiles = files.where((file) {
+            final fileName = (file['fileName'] ?? '').toLowerCase();
+            return fileName.contains(_searchQuery);
+          }).toList();
+
+          return ListView.builder(
+            itemCount: filteredFiles.length,
+            itemBuilder: (context, index) {
+              final file = filteredFiles[index];
+              final fileName = file['fileName'] ?? 'Unknown';
+              final uploadedAt = file['uploadedAt'] != null
+                  ? _formatDate(file['uploadedAt'].toDate())
+                  : 'Unknown Date';
+              final fileUrl = file['fileURL'] ?? ''; // Corrected field name
+
+              return FileContainer(
+                fileName: fileName,
+                uploadedAt: uploadedAt,
+                onTap: () {
+                  if (fileUrl.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FileDetailsPage(
+                          fileName: fileName,
+                          fileURL: fileUrl,
+                        ),
+                      ),
+                    );
+                  } else {
+                    Fluttertoast.showToast(
+                      msg: "File URL is missing.",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.red,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                  }
+                },
+                onDelete: () async {
+                  await _showDeleteConfirmationDialog(context, file.id);
+                },
+              );
+            },
           );
         },
       ),
+    );
+  }
+
+  String _formatDate(DateTime dateTime) {
+    final DateFormat formatter = DateFormat('MM/dd/yyyy \'at\' h:mm a');
+    return formatter.format(dateTime);
+  }
+
+  Future<void> _showDeleteConfirmationDialog(
+      BuildContext context, String fileId) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[800],
+          title: Text(
+            'Delete File',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text('Are you really sure you want to delete this file?',
+              style: TextStyle(color: Colors.white)),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(widget.studentNumber)
+                    .collection('files')
+                    .doc(fileId)
+                    .delete();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

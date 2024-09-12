@@ -1,20 +1,34 @@
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class TextToSpeech extends StatefulWidget {
+  final String studentNumber;
+
+  TextToSpeech({required this.studentNumber});
+
   @override
   _TextToSpeechState createState() => _TextToSpeechState();
 }
 
 class _TextToSpeechState extends State<TextToSpeech> {
   List<UploadedFile> uploadedFiles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUploadedFiles();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,67 +65,208 @@ class _TextToSpeechState extends State<TextToSpeech> {
               }
             }),
             const SizedBox(height: 20),
-            // Display uploaded file containers
-            ...uploadedFiles.map((file) => FileContainer(
-              fileName: file.fileName,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FileDetailsPage(
-                      fileName: file.fileName,
-                      fileBytes: file.fileBytes,
-                    ),
-                  ),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(widget.studentNumber)
+                  .collection('files')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Center(child: Text('No files available.'));
+                }
+
+                final files = snapshot.data!.docs;
+
+                return Column(
+                  children: files.map((file) {
+                    final fileName = file['fileName'] ?? 'Unknown';
+                    final fileURL = file['fileURL'] ?? '';
+                    final uploadedAt = file['uploadedAt'] != null
+                        ? _formatDate(file['uploadedAt'].toDate())
+                        : 'Unknown Date';
+
+                    return FileContainer(
+                      fileName: fileName,
+                      uploadedAt: uploadedAt,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FileDetailsPage(
+                              fileName: fileName,
+                              fileURL: fileURL,
+                            ),
+                          ),
+                        );
+                      },
+                      onDelete: () async {
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(widget.studentNumber)
+                            .collection('files')
+                            .doc(file.id)
+                            .delete();
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'File deleted successfully',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
                 );
               },
-            )),
+            ),
           ],
         ),
       ),
     );
   }
 
+  String _formatDate(DateTime dateTime) {
+    final DateFormat formatter = DateFormat('MM/dd/yyyy \'at\' h:mm a');
+    return formatter.format(dateTime);
+  }
+
   Future<void> _handleFileSelection(BuildContext context, PlatformFile file) async {
     Uint8List? fileBytes = file.bytes;
 
     if (fileBytes != null) {
+      print('File selected: ${file.name}, Extension: ${file.extension}');
+
+      // Show a snackbar when upload starts
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Uploading ${file.name}...'),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Handle if file is a PDF
       if (file.extension == 'pdf') {
-        setState(() {
-          uploadedFiles.add(UploadedFile(
-            fileName: file.name,
-            fileBytes: fileBytes!,
-          ));
-        });
-      } else if (file.extension == 'doc' || file.extension == 'docx') {
+        print('PDF file detected. Proceeding with upload...');
+        await _uploadPdfToFirebase(file, fileBytes, widget.studentNumber);
+      }
+      // Handle if file is a Word document
+      else if (file.extension == 'doc' || file.extension == 'docx') {
+        print('Word document detected. Redirecting to conversion...');
         await _launchConversionUrl(context);
       } else {
-        print('Unsupported file type');
+        print('Unsupported file type detected: ${file.extension}');
       }
     } else {
+      print('File bytes are null. Attempting to read file from path...');
       try {
         File pickedFile = File(file.path!);
         fileBytes = await pickedFile.readAsBytes();
 
         if (fileBytes != null) {
+          print('File read successfully from path. Extension: ${file.extension}');
+
+          // Show a snackbar when upload starts
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Uploading ${file.name}...'),
+              backgroundColor: Colors.blue,
+              duration: Duration(seconds: 3),
+            ),
+          );
+
+          // Handle if file is a PDF
           if (file.extension == 'pdf') {
-            setState(() {
-              uploadedFiles.add(UploadedFile(
-                fileName: file.name,
-                fileBytes: fileBytes!,
-              ));
-            });
-          } else if (file.extension == 'doc' || file.extension == 'docx') {
+            print('PDF file detected. Proceeding with upload...');
+            await _uploadPdfToFirebase(file, fileBytes, widget.studentNumber);
+          }
+          // Handle if file is a Word document
+          else if (file.extension == 'doc' || file.extension == 'docx') {
+            print('Word document detected. Redirecting to conversion...');
             await _launchConversionUrl(context);
+          } else {
+            print('Unsupported file type detected: ${file.extension}');
           }
         } else {
-          print('Error: fileBytes is null');
+          print('Error: fileBytes is null after reading from path');
         }
       } catch (e) {
-        print('Error reading file: $e');
+        print('Error reading file from path: $e');
       }
     }
   }
+
+  Future<void> _uploadPdfToFirebase(PlatformFile file, Uint8List fileBytes, String studentNumber) async {
+    try {
+      String fileName = file.name;
+      DateTime uploadTime = DateTime.now();  // Get the current time
+
+      // Create a reference to the storage location
+      Reference storageRef = FirebaseStorage.instance.ref().child('uploads/$studentNumber/$fileName');
+
+      // Upload the file
+      await storageRef.putData(fileBytes);
+
+      // Get the file's download URL
+      String downloadURL = await storageRef.getDownloadURL();
+
+      // Save the file info in Firestore using studentNumber with timestamp
+      var docRef = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(studentNumber)
+          .collection('files')
+          .add({
+        'fileName': fileName,
+        'fileURL': downloadURL,
+        'uploadedAt': Timestamp.fromDate(uploadTime),
+      });
+
+      // Add file to the local state for UI display
+      setState(() {
+        uploadedFiles.add(UploadedFile(
+          id: docRef.id,  // Get the document ID from Firestore
+          fileName: fileName,
+          fileBytes: fileBytes,
+          downloadURL: downloadURL,  // Save URL instead of fileBytes
+          uploadedAt: Timestamp.fromDate(uploadTime),
+        ));
+      });
+
+      // Show a snackbar when the upload is complete
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('File ${file.name} uploaded successfully!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    } catch (e) {
+      print('Error uploading file to Firebase: $e');
+
+      // Show a snackbar when there's an error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload ${file.name}. Please try again.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+
 
   Future<void> _launchConversionUrl(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -132,14 +287,72 @@ class _TextToSpeechState extends State<TextToSpeech> {
       throw 'Could not launch $url';
     }
   }
+
+  Future<void> _fetchUploadedFiles() async {
+    try {
+      final fileDocs = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.studentNumber)
+          .collection('files')
+          .get();
+
+      List<UploadedFile> files = [];
+
+      for (var doc in fileDocs.docs) {
+        final data = doc.data();
+        final fileName = data['fileName'] ?? '';
+        final fileURL = data['fileURL'] ?? '';
+        final uploadedAt = data['uploadedAt'] as Timestamp;  // Cast uploadedAt to Timestamp
+
+        // Fetch file bytes from URL
+        final fileBytes = await _fetchFileBytes(fileURL);
+
+        files.add(UploadedFile(
+          id: doc.id,  // Store document ID
+          fileName: fileName,
+          fileBytes: fileBytes,
+          downloadURL: fileURL,
+          uploadedAt: uploadedAt,  // Add uploadedAt
+        ));
+      }
+
+      setState(() {
+        uploadedFiles = files;
+      });
+    } catch (e) {
+      print('Error fetching files: $e');
+    }
+  }
+
+
+
+  // Helper method to fetch file bytes from URL
+  Future<Uint8List> _fetchFileBytes(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      throw Exception('Failed to load file');
+    }
+  }
 }
 
 class UploadedFile {
+  final String id;  // Add id field
   final String fileName;
   final Uint8List fileBytes;
+  final String downloadURL;
+  final Timestamp uploadedAt;  // Assuming this is a Timestamp type
 
-  UploadedFile({required this.fileName, required this.fileBytes});
+  UploadedFile({
+    required this.id,  // Add id to the constructor
+    required this.fileName,
+    required this.fileBytes,
+    required this.downloadURL,
+    required this.uploadedAt,
+  });
 }
+
 
 class FileUploadWidget extends StatelessWidget {
   final Function(FilePickerResult?) onFilePicked;
@@ -182,33 +395,92 @@ class FileUploadWidget extends StatelessWidget {
 
 class FileContainer extends StatelessWidget {
   final String fileName;
+  final String uploadedAt;
   final VoidCallback onTap;
+  final VoidCallback onDelete;
 
-  FileContainer({required this.fileName, required this.onTap});
+  const FileContainer({
+    required this.fileName,
+    required this.uploadedAt,
+    required this.onTap,
+    required this.onDelete,
+  });
+
+  Future<void> _showDeleteConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap a button to dismiss dialog
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[800], // Set the background color of the dialog
+          title: Text(
+            'Confirm Deletion',
+            style: TextStyle(color: Colors.white), // Set title color
+          ),
+          content: Text(
+            'Are you sure you want to delete "$fileName"?',
+            style: TextStyle(color: Colors.white), // Set content color
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              style: TextButton.styleFrom(foregroundColor: Colors.green),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+                onDelete(); // Call the delete function
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          children: [
-            Icon(Icons.insert_drive_file, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                fileName,
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 16, color: Colors.white),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.grey[800],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: onTap,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    fileName,
+                    style: GoogleFonts.poppins(color: Colors.white),
+                  ),
+                  Text(
+                    uploadedAt,
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _showDeleteConfirmationDialog(context),
+          ),
+        ],
       ),
     );
   }
@@ -216,9 +488,9 @@ class FileContainer extends StatelessWidget {
 
 class FileDetailsPage extends StatefulWidget {
   final String fileName;
-  final Uint8List fileBytes;
+  final String fileURL;
 
-  FileDetailsPage({required this.fileName, required this.fileBytes});
+  FileDetailsPage({required this.fileName, required this.fileURL});
 
   @override
   _FileDetailsPageState createState() => _FileDetailsPageState();
@@ -236,8 +508,13 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
     super.initState();
     _flutterTts.setSpeechRate(_playbackSpeed);
     _flutterTts.setCompletionHandler(() {
-      setState(() {
-        _isPlaying = false;
+      // Only update the state after build process is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _isPlaying = false;
+          });
+        }
       });
     });
   }
@@ -246,6 +523,37 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
   void dispose() {
     _flutterTts.stop();
     super.dispose();
+  }
+
+  Future<void> _speak() async {
+    if (_selectedText.isEmpty) {
+      await _flutterTts.speak('Text is empty!');
+    } else {
+      await _flutterTts.speak(_selectedText);
+      if (mounted) {
+        setState(() {
+          _isPlaying = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _pause() async {
+    await _flutterTts.pause();
+    if (mounted) {
+      setState(() {
+        _isPlaying = false;
+      });
+    }
+  }
+
+  Future<void> _stop() async {
+    await _flutterTts.stop();
+    if (mounted) {
+      setState(() {
+        _isPlaying = false;
+      });
+    }
   }
 
   @override
@@ -277,14 +585,19 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
         child: Column(
           children: [
             Expanded(
-              child: SfPdfViewer.memory(
-                widget.fileBytes,
+              child: SfPdfViewer.network(
+                widget.fileURL,
                 controller: _pdfViewerController,
                 enableTextSelection: true,
                 onTextSelectionChanged: (PdfTextSelectionChangedDetails details) {
-                  setState(() {
-                    _selectedText = details.selectedText ?? '';
-                    print(_selectedText);
+                  // Schedule a state update after the current frame
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      setState(() {
+                        _selectedText = details.selectedText ?? '';
+                        print(_selectedText);
+                      });
+                    }
                   });
                 },
               ),
@@ -308,15 +621,19 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
                     );
                   }
                 }
-                setState(() {
-                  _isPlaying = !_isPlaying;
-                });
+                if (mounted) {
+                  setState(() {
+                    _isPlaying = !_isPlaying;
+                  });
+                }
               },
               onSpeedChanged: (speed) {
-                setState(() {
-                  _playbackSpeed = speed ?? 0.5;
-                  _flutterTts.setSpeechRate(_playbackSpeed);
-                });
+                if (mounted) {
+                  setState(() {
+                    _playbackSpeed = speed ?? 0.5;
+                    _flutterTts.setSpeechRate(_playbackSpeed);
+                  });
+                }
               },
               currentSpeed: _playbackSpeed,
               isPlaying: _isPlaying,
@@ -327,6 +644,7 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
     );
   }
 }
+
 
 class ControlButtonsSection extends StatelessWidget {
   final void Function() onPlayPause;
