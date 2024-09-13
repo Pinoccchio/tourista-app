@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import '../study_planner.dart';
 import '../text_to_speech.dart';
 import 'menu_item.dart';
 
@@ -235,9 +236,22 @@ class _HomeState extends State<Home> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        MenuItem(
-          iconPath: 'assets/animated_icon/study-planner-animated.json',
-          label: 'Study Planner',
+        // GestureDetector for Study Planner navigation
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StudyPlanner(
+                  studentNumber: widget.studentNumber,
+                ),
+              ),
+            );
+          },
+          child: MenuItem(
+            iconPath: 'assets/animated_icon/study-planner-animated.json',
+            label: 'Study Planner',
+          ),
         ),
         const SizedBox(width: 16),
         GestureDetector(
@@ -259,6 +273,7 @@ class _HomeState extends State<Home> {
       ],
     );
   }
+
 
   Widget _buildTranscriptionsTitle() {
     return Align(
@@ -319,7 +334,16 @@ class _HomeState extends State<Home> {
           }
 
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(child: Text('No files available.'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Lottie.asset('assets/animated_icon/empty-animation.json', width: 200, height: 200),
+                  SizedBox(height: 20),
+                  Text('No files available.'),
+                ],
+              ),
+            );
           }
 
           final files = snapshot.data!.docs;

@@ -10,7 +10,6 @@ import 'package:flutter_app/pages/group_36141.dart';
 import 'package:flutter_app/pages/Home_Screen/home.dart';
 import 'package:flutter_app/pages/profile.dart';
 import 'package:flutter_app/pages/sign_out.dart';
-import 'package:flutter_app/pages/study_planner.dart';
 import 'package:flutter_app/pages/study_planner_1.dart';
 import 'package:flutter_app/pages/text_to_speech.dart';
 import 'package:flutter_app/pages/transcriptions.dart';
@@ -90,8 +89,6 @@ class AppRoutes {
       },
 
       signOut: (context) => SignOut(),
-      studyPlanner: (context) => StudyPlanner(),
-      studyPlanner1: (context) => StudyPlanner1(),
       transcriptions: (context) => Transcriptions(),
     };
   }

@@ -11,6 +11,7 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
+import 'package:lottie/lottie.dart';
 
 class TextToSpeech extends StatefulWidget {
   final String studentNumber;
@@ -81,7 +82,16 @@ class _TextToSpeechState extends State<TextToSpeech> {
                 }
 
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return Center(child: Text('No files available.'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Lottie.asset('assets/animated_icon/empty-animation.json', width: 200, height: 200),
+                        SizedBox(height: 20),
+                        Text('No files available.'),
+                      ],
+                    ),
+                  );
                 }
 
                 final files = snapshot.data!.docs;
