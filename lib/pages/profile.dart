@@ -164,7 +164,7 @@ class _ProfileState extends State<Profile> {
                 Row(
                   children: [
                     IconButton(
-                      icon: SvgPicture.asset('assets/vectors/vector_46_x2.svg'),
+                      icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
                       onPressed: () {
                         Navigator.pop(context);
                       },

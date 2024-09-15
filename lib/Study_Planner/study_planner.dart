@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter_app/Study_Planner/update_data.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -376,6 +377,7 @@ class _StudyPlannerState extends State<StudyPlanner>
                 svgAsset: 'assets/vectors/vector_2_x2.svg', // Update as needed
                 onActionTap: () => _showActionMenu(context, doc.id),
                 onCheckTap: () => _markTaskAsCompleted(doc.id),
+                showCheckIcon: taskType != 'Completed', // Hide check icon for completed tasks
               );
             }).toList(),
           ),
@@ -383,7 +385,6 @@ class _StudyPlannerState extends State<StudyPlanner>
       },
     );
   }
-
 
   void _startRealTimeTaskChecker() {
     _taskCheckTimer = Timer.periodic(Duration(minutes: 1), (timer) async {
@@ -450,7 +451,8 @@ class _StudyPlannerState extends State<StudyPlanner>
         required String description,
         required String svgAsset,
         required VoidCallback onActionTap,
-        required VoidCallback onCheckTap, // Ensure this parameter is defined
+        VoidCallback? onCheckTap, // Make it nullable
+        bool showCheckIcon = true, // Add a flag to control icon visibility
       }) {
     return Container(
       margin: EdgeInsets.fromLTRB(22, 0, 24, 26),
@@ -542,10 +544,11 @@ class _StudyPlannerState extends State<StudyPlanner>
                 SizedBox(width: 10),
                 Row(
                   children: [
-                    IconButton(
-                      icon: Icon(Icons.check, color: Colors.green, size: 24),
-                      onPressed: onCheckTap, // Use the onCheckTap callback
-                    ),
+                    if (showCheckIcon) // Conditionally show the check icon
+                      IconButton(
+                        icon: Icon(Icons.check, color: Colors.green, size: 24),
+                        onPressed: onCheckTap,
+                      ),
                     SizedBox(width: 10),
                     GestureDetector(
                       onTap: onActionTap,
@@ -563,6 +566,7 @@ class _StudyPlannerState extends State<StudyPlanner>
       ),
     );
   }
+
 
   void _showActionMenu(BuildContext context, String docId) {
     showModalBottomSheet(
@@ -587,8 +591,15 @@ class _StudyPlannerState extends State<StudyPlanner>
                   ),
                 ),
                 onTap: () {
-                  Navigator.pop(context);
-                  //_showEditTaskDialog(context, docId);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UpdateDataScreen(
+                        studentNumber: widget.studentNumber,
+                        docId: docId,
+                      ),
+                    ),
+                  );
                 },
               ),
               Divider(color: Colors.grey[700]),
@@ -626,19 +637,27 @@ class _StudyPlannerState extends State<StudyPlanner>
 
       var data = doc.data() as Map<String, dynamic>;
 
+      var subjectController = TextEditingController(text: data['subject']);
+      var startTimeController = TextEditingController(
+        text: data['startTime'] is Timestamp
+            ? data['startTime'].toDate().toString()
+            : data['startTime'],
+      );
+      var endTimeController = TextEditingController(
+        text: data['endTime'] is Timestamp
+            ? data['endTime'].toDate().toString()
+            : data['endTime'],
+      );
+      var detailsController = TextEditingController(text: data['details']);
+
       showModalBottomSheet(
         context: context,
-        backgroundColor: Color(0xFF000000),
+        backgroundColor: Colors.black, // Set your desired color
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         builder: (context) {
-          final subjectController = TextEditingController(text: data['subject']);
-          final startTimeController = TextEditingController(text: data['startTime']);
-          final endTimeController = TextEditingController(text: data['endTime']);
-          final detailsController = TextEditingController(text: data['details']);
-
-          return Container(
+          return Padding(
             padding: EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -679,12 +698,13 @@ class _StudyPlannerState extends State<StudyPlanner>
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: Text('Cancel', style: TextStyle(color: Colors.white)),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                     ElevatedButton(
                       onPressed: () async {
-                        if (!mounted) return;
-
                         try {
                           await FirebaseFirestore.instance
                               .collection('users')

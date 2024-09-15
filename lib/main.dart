@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for SystemChrome
+import 'package:flutter_app/pages/Notification_Handler/notification_handler.dart';
 import 'package:flutter_app/routes/app_routes.dart'; // Import the routes
+import 'package:timezone/data/latest.dart' as tz;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,6 +14,14 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+
+  // Initialize time zones and notifications
+  tz.initializeTimeZones();
+  NotificationHandler notificationHandler = NotificationHandler();
+  notificationHandler.initializeNotifications();
+
+  // Request notification permissions
+  await notificationHandler.requestNotificationPermissions();
 
   runApp(MyApp());
 }

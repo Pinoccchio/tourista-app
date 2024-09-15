@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import '../study_planner.dart';
+import '../../Study_Planner/study_planner.dart';
 import '../text_to_speech.dart';
 import 'menu_item.dart';
 

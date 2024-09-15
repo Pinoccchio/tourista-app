@@ -3,10 +3,10 @@ import 'package:connectivity_plus/connectivity_plus.dart'; // Import connectivit
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../Home_Screen/home.dart'; // Import SharedPreferences
+import '../Home_Screen/home.dart';
+import '../Notification_Handler/notification_handler.dart'; // Import SharedPreferences
 
 class SignInFilled extends StatefulWidget {
   @override
@@ -17,6 +17,7 @@ class _SignInFilledState extends State<SignInFilled> {
   final TextEditingController _studentNumberController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  final NotificationHandler _notificationHandler = NotificationHandler();
 
   Future<bool> _isConnectedToInternet() async {
     var connectivityResult = await (Connectivity().checkConnectivity());
@@ -29,6 +30,13 @@ class _SignInFilledState extends State<SignInFilled> {
     await prefs.setString('studentNumber', studentNumber); // Store student number
     await prefs.setString('firstName', firstName); // Store first name
     await prefs.setString('lastName', lastName); // Store last name
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationHandler.initializeNotifications();
+    _notificationHandler.requestNotificationPermissions();
   }
 
   @override
@@ -132,6 +140,9 @@ class _SignInFilledState extends State<SignInFilled> {
                               user['firstName'],
                               user['lastName'],
                             );
+
+                            // Show welcome notification
+                            await _notificationHandler.showWelcomeNotification(user['firstName']);
 
                             Navigator.pushReplacement(
                               context,

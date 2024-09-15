@@ -276,8 +276,6 @@ class _TextToSpeechState extends State<TextToSpeech> {
     }
   }
 
-
-
   Future<void> _launchConversionUrl(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -333,8 +331,6 @@ class _TextToSpeechState extends State<TextToSpeech> {
       print('Error fetching files: $e');
     }
   }
-
-
 
   // Helper method to fetch file bytes from URL
   Future<Uint8List> _fetchFileBytes(String url) async {
@@ -453,7 +449,6 @@ class FileContainer extends StatelessWidget {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -512,13 +507,14 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
   PdfViewerController _pdfViewerController = PdfViewerController();
   final FlutterTts _flutterTts = FlutterTts();
   String _selectedText = '';
+  String _selectedLanguage = 'en-US'; // Default to English
 
   @override
   void initState() {
     super.initState();
     _flutterTts.setSpeechRate(_playbackSpeed);
+    _flutterTts.setLanguage(_selectedLanguage); // Set initial language
     _flutterTts.setCompletionHandler(() {
-      // Only update the state after build process is complete
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() {
@@ -526,6 +522,13 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
           });
         }
       });
+    });
+  }
+
+  void _onLanguageChanged(String? language) {
+    setState(() {
+      _selectedLanguage = language ?? 'en-US';
+      _flutterTts.setLanguage(_selectedLanguage);
     });
   }
 
@@ -539,7 +542,10 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
     if (_selectedText.isEmpty) {
       await _flutterTts.speak('Text is empty!');
     } else {
-      await _flutterTts.speak(_selectedText);
+      // Replace new lines with spaces for continuous reading
+      String continuousText = _selectedText.replaceAll('\n', ' ');
+
+      await _flutterTts.speak(continuousText);
       if (mounted) {
         setState(() {
           _isPlaying = true;
@@ -547,6 +553,7 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
       }
     }
   }
+
 
   Future<void> _pause() async {
     await _flutterTts.pause();
@@ -647,6 +654,8 @@ class _FileDetailsPageState extends State<FileDetailsPage> {
               },
               currentSpeed: _playbackSpeed,
               isPlaying: _isPlaying,
+              selectedLanguage: _selectedLanguage,
+              onLanguageChanged: _onLanguageChanged,
             ),
           ],
         ),
@@ -661,12 +670,16 @@ class ControlButtonsSection extends StatelessWidget {
   final ValueChanged<double?> onSpeedChanged;
   final double currentSpeed;
   final bool isPlaying;
+  final String selectedLanguage;
+  final ValueChanged<String?> onLanguageChanged;
 
   ControlButtonsSection({
     required this.onPlayPause,
     required this.onSpeedChanged,
     required this.currentSpeed,
     required this.isPlaying,
+    required this.selectedLanguage,
+    required this.onLanguageChanged,
   });
 
   @override
@@ -690,6 +703,8 @@ class ControlButtonsSection extends StatelessWidget {
         PlaybackSpeedControl(
           onSpeedChanged: onSpeedChanged,
           currentSpeed: currentSpeed,
+          selectedLanguage: selectedLanguage,
+          onLanguageChanged: onLanguageChanged,
         ),
       ],
     );
@@ -699,42 +714,81 @@ class ControlButtonsSection extends StatelessWidget {
 class PlaybackSpeedControl extends StatelessWidget {
   final ValueChanged<double?> onSpeedChanged;
   final double currentSpeed;
+  final String selectedLanguage;
+  final ValueChanged<String?> onLanguageChanged;
 
   PlaybackSpeedControl({
     required this.onSpeedChanged,
     required this.currentSpeed,
+    required this.selectedLanguage,
+    required this.onLanguageChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          'Speed: ${currentSpeed}x',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Colors.white,
-          ),
+        // Playback speed control on the left
+        Row(
+          children: [
+            Text(
+              'Speed: ${currentSpeed}x',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(width: 20),
+            DropdownButton<double?>(
+              value: currentSpeed,
+              items: [0.5, 1.0, 1.5, 2.0].map((speed) {
+                return DropdownMenuItem<double?>(
+                  value: speed,
+                  child: Text(
+                    '${speed}x',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                );
+              }).toList(),
+              onChanged: onSpeedChanged,
+              dropdownColor: Colors.grey[800],
+              underline: SizedBox(),
+            ),
+          ],
         ),
-        const SizedBox(width: 20),
-        DropdownButton<double?>(
-          value: currentSpeed,
-          items: [0.5, 1.0, 1.5, 2.0].map((speed) {
-            return DropdownMenuItem<double?>(
-              value: speed,
+
+        // Language dropdown on the right
+        DropdownButton<String?>(
+          value: selectedLanguage,
+          items: [
+            DropdownMenuItem(
+              value: 'en-US',
               child: Text(
-                '${speed}x',
+                'English',
                 style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w400,
                   fontSize: 16,
                   color: Colors.white,
                 ),
               ),
-            );
-          }).toList(),
-          onChanged: onSpeedChanged,
+            ),
+            DropdownMenuItem(
+              value: 'fil-PH',
+              child: Text(
+                'Filipino',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+          onChanged: onLanguageChanged,
           dropdownColor: Colors.grey[800],
           underline: SizedBox(),
         ),
