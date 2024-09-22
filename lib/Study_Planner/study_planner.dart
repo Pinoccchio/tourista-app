@@ -49,7 +49,7 @@ class _StudyPlannerState extends State<StudyPlanner>
         ),
         flexibleSpace: Center(
           child: Text(
-            'Study Planner',
+            'Routine Management',
             style: GoogleFonts.almarai(
               fontSize: 18,
               fontWeight: FontWeight.bold,

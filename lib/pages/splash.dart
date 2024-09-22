@@ -78,47 +78,17 @@ class _SplashState extends State<Splash> {
   // Check if the user is logged in and handle navigation
   Future<void> _checkUserSession() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final studentNumber = prefs.getString('studentNumber');
-    final firstName = prefs.getString('firstName');
-    final lastName = prefs.getString('lastName');
+    final email = prefs.getString('email');
 
-    if (studentNumber != null) {
+    if (email != null) {
       // User is logged in, navigate to the home screen
-      _navigateToHomeScreen(studentNumber, firstName, lastName);
+      _navigateToHomeScreen(email);
     } else {
-      // Check if it's the first time and handle user registration
-      bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
-      if (isFirstTime) {
-        await _uploadStaticUsers();
-        await prefs.setBool('isFirstTime', false); // Set isFirstTime to false after uploading
-      }
+      // Navigate to the sign-in screen
       _navigateToSignInScreen();
     }
   }
 
-  // Upload static users to Firestore
-  Future<void> _uploadStaticUsers() async {
-    try {
-      await FirestoreDatabaseHelper.uploadStaticUsers();
-      Fluttertoast.showToast(
-        msg: "Static users uploaded successfully",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    } catch (e) {
-      Fluttertoast.showToast(
-        msg: "Error uploading static users: $e",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
-  }
 
   // Navigate to the sign-in screen
   void _navigateToSignInScreen() {
@@ -130,17 +100,16 @@ class _SplashState extends State<Splash> {
   }
 
   // Navigate to the home screen with user data
-  void _navigateToHomeScreen(String studentNumber, String? firstName, String? lastName) {
+  void _navigateToHomeScreen(String email) {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => Home(
-          studentNumber: studentNumber,
-          firstName: firstName,
-          lastName: lastName,
+          email: email,
         ),
       ),
     );
   }
+
 
   // Show no internet connection dialog
   void _showNoInternetDialog() {

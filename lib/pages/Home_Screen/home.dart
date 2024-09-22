@@ -10,14 +10,10 @@ import '../text_to_speech.dart';
 import 'menu_item.dart';
 
 class Home extends StatefulWidget {
-  final String studentNumber;
-  final String? firstName;
-  final String? lastName;
+  final String email;
 
   const Home({
-    required this.studentNumber,
-    this.firstName,
-    this.lastName,
+    required this.email,
   });
 
   @override
@@ -27,25 +23,14 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final TextEditingController _searchController = TextEditingController();
   String? _profileImageUrl;
+  String _fullName = 'Guest'; // Default to Guest
   String _searchQuery = '';
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_filterItems);
-
-    if (widget.studentNumber.isNotEmpty) {
-      _listenForUserData();
-    } else {
-      Fluttertoast.showToast(
-        msg: "Student number is empty. Please sign in again.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
+    _listenForUserData();
   }
 
   @override
@@ -65,7 +50,7 @@ class _HomeState extends State<Home> {
   void _listenForUserData() {
     FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.studentNumber)
+        .doc(widget.email) // Use email as the document ID
         .snapshots()
         .listen((snapshot) {
       if (snapshot.exists) {
@@ -73,6 +58,7 @@ class _HomeState extends State<Home> {
         if (mounted) {
           setState(() {
             _profileImageUrl = user['profilePictureUrl'];
+            _fullName = user['fullName'] ?? 'Guest'; // Fetch full name
           });
         }
       } else {
@@ -124,7 +110,7 @@ class _HomeState extends State<Home> {
     return Align(
       alignment: Alignment.topLeft,
       child: Text(
-        'Welcome to EduHelix',
+        'Welcome to AgosBuhay',
         style: GoogleFonts.montserrat(
           fontWeight: FontWeight.w400,
           fontSize: 12,
@@ -142,7 +128,7 @@ class _HomeState extends State<Home> {
       children: [
         Flexible(
           child: Text(
-            widget.firstName ?? 'User',
+            _fullName.isNotEmpty ? _fullName.split(' ').first : 'Guest', // Display first name or 'Guest'
             style: GoogleFonts.montserrat(
               fontWeight: FontWeight.w700,
               fontSize: 32,
@@ -157,9 +143,7 @@ class _HomeState extends State<Home> {
               context,
               '/profile',
               arguments: {
-                'firstName': widget.firstName,
-                'lastName': widget.lastName,
-                'studentNumber': widget.studentNumber,
+                'email': widget.email, // Pass email to profile
                 'profilePictureUrl': _profileImageUrl,
               },
             );
@@ -176,6 +160,7 @@ class _HomeState extends State<Home> {
       ],
     );
   }
+
 
   Widget _buildSearchBar() {
     return Container(
@@ -233,46 +218,63 @@ class _HomeState extends State<Home> {
   }
 
   Widget _buildMenuItems(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 16.0, // Space between items
+      runSpacing: 16.0, // Space between rows
       children: [
-        // GestureDetector for Study Planner navigation
         GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => StudyPlanner(
-                  studentNumber: widget.studentNumber,
+                  studentNumber: widget.email, // Use email for navigation
                 ),
               ),
             );
           },
           child: MenuItem(
             iconPath: 'assets/animated_icon/study-planner-animated.json',
-            label: 'Study Planner',
+            label: 'Routine\nManagement',
           ),
         ),
-        const SizedBox(width: 16),
         GestureDetector(
           onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => TextToSpeech(
-                  studentNumber: widget.studentNumber,
+                  email: widget.email, // Use email for navigation
                 ),
               ),
             );
           },
           child: MenuItem(
-            iconPath: 'assets/animated_icon/animated-microphone.json',
-            label: 'Text-To-Speech',
+            iconPath: 'assets/animated_icon/pdf-reader-anim.json',
+            label: 'Portable-Document\nReader',
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            Fluttertoast.showToast(
+              msg: "Heart Rate Monitoring is not yet available.",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              backgroundColor: Colors.red,
+              textColor: Colors.white,
+              fontSize: 16.0,
+            );
+          },
+          child: MenuItem(
+            iconPath: 'assets/animated_icon/heart-rate-animation.json',
+            label: 'Heart Rate\nMonitoring',
           ),
         ),
       ],
     );
   }
+
 
 
   Widget _buildTranscriptionsTitle() {
@@ -296,7 +298,7 @@ class _HomeState extends State<Home> {
                 context,
                 MaterialPageRoute(
                   builder: (context) => TextToSpeech(
-                    studentNumber: widget.studentNumber,
+                    email: widget.email, // Use email for navigation
                   ),
                 ),
               );
@@ -321,7 +323,7 @@ class _HomeState extends State<Home> {
       child: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('users')
-            .doc(widget.studentNumber)
+            .doc(widget.email)
             .collection('files')
             .snapshots(),
         builder: (context, snapshot) {
@@ -433,7 +435,7 @@ class _HomeState extends State<Home> {
               onPressed: () async {
                 await FirebaseFirestore.instance
                     .collection('users')
-                    .doc(widget.studentNumber)
+                    .doc(widget.email)
                     .collection('files')
                     .doc(fileId)
                     .delete();
@@ -445,4 +447,5 @@ class _HomeState extends State<Home> {
       },
     );
   }
+
 }

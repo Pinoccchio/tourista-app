@@ -129,7 +129,7 @@ class NotificationHandler {
 
     await flutterLocalNotificationsPlugin.show(
       2, // Notification ID
-      'Welcome to EduHelix',
+      'Welcome to AgosBuhay',
       'Hello, $userName!',
       platformChannelSpecifics,
     );

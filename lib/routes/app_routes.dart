@@ -72,20 +72,12 @@ class AppRoutes {
 
       profile: (context) {
         final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-        final user = args != null ? User(
-          firstName: args['firstName'] ?? 'Guest',
-          lastName: args['lastName'] ?? '',
-          studentNumber: args['studentNumber'] ?? '',
-          password: args['password'] ?? '',
-          profilePictureUrl: args['profilePictureUrl'] ?? '',
-        ) : User(
-          firstName: 'Guest',
-          lastName: '',
-          studentNumber: '',
-          password: '',
-          profilePictureUrl: '',
+
+        final email = args?['email'] ?? '';
+
+        return Profile(
+          email: email,
         );
-        return Profile(user: user);
       },
 
       signOut: (context) => SignOut(),

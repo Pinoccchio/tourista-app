@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "56104389901",
-    "project_id": "eduhelix-db",
-    "storage_bucket": "eduhelix-db.appspot.com"
+    "project_number": "221573319395",
+    "project_id": "agosbuhay-app-db",
+    "storage_bucket": "agosbuhay-app-db.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:56104389901:android:09a85e2287f220740b3444",
+        "mobilesdk_app_id": "1:221573319395:android:b5b4f3a513f9e30de413d6",
         "android_client_info": {
           "package_name": "com.example.flutter_app"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCBZ0_7zoxo5fGgAtGavbwF5TnEJIXdnHY"
+          "current_key": "AIzaSyDGy_abg5LLmhUZcvq4sd0vvhNIXwzlF_U"
         }
       ],
       "services": {

@@ -14,9 +14,9 @@ import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 
 class TextToSpeech extends StatefulWidget {
-  final String studentNumber;
+  final String email;
 
-  TextToSpeech({required this.studentNumber});
+  TextToSpeech({required this.email});
 
   @override
   _TextToSpeechState createState() => _TextToSpeechState();
@@ -45,7 +45,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
           },
         ),
         title: Text(
-          'Text-To-Speech',
+          'Portable-Document-Reader',
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w700,
             fontSize: 20,
@@ -69,7 +69,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
-                  .doc(widget.studentNumber)
+                  .doc(widget.email)
                   .collection('files')
                   .snapshots(),
               builder: (context, snapshot) {
@@ -121,7 +121,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
                       onDelete: () async {
                         await FirebaseFirestore.instance
                             .collection('users')
-                            .doc(widget.studentNumber)
+                            .doc(widget.email)
                             .collection('files')
                             .doc(file.id)
                             .delete();
@@ -170,7 +170,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
       // Handle if file is a PDF
       if (file.extension == 'pdf') {
         print('PDF file detected. Proceeding with upload...');
-        await _uploadPdfToFirebase(file, fileBytes, widget.studentNumber);
+        await _uploadPdfToFirebase(file, fileBytes, widget.email);
       }
       // Handle if file is a Word document
       else if (file.extension == 'doc' || file.extension == 'docx') {
@@ -200,7 +200,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
           // Handle if file is a PDF
           if (file.extension == 'pdf') {
             print('PDF file detected. Proceeding with upload...');
-            await _uploadPdfToFirebase(file, fileBytes, widget.studentNumber);
+            await _uploadPdfToFirebase(file, fileBytes, widget.email);
           }
           // Handle if file is a Word document
           else if (file.extension == 'doc' || file.extension == 'docx') {
@@ -300,7 +300,7 @@ class _TextToSpeechState extends State<TextToSpeech> {
     try {
       final fileDocs = await FirebaseFirestore.instance
           .collection('users')
-          .doc(widget.studentNumber)
+          .doc(widget.email)
           .collection('files')
           .get();
 

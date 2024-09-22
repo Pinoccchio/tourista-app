@@ -1,23 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/SignIn_Screen/sign_up_filled.dart';
+import 'package:flutter_app/pages/SignIn_Screen/sign_in_filled.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../Home_Screen/home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../Notification_Handler/notification_handler.dart';
 
-class SignInFilled extends StatefulWidget {
+class SignUpFilled extends StatefulWidget {
   @override
-  _SignInFilledState createState() => _SignInFilledState();
+  _SignUpFilledState createState() => _SignUpFilledState();
 }
 
-class _SignInFilledState extends State<SignInFilled> {
+class _SignUpFilledState extends State<SignUpFilled> {
+  final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Auth instance
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isPasswordVisible = false;
   final NotificationHandler _notificationHandler = NotificationHandler();
 
@@ -26,10 +26,12 @@ class _SignInFilledState extends State<SignInFilled> {
     return connectivityResult != ConnectivityResult.none;
   }
 
-  Future<void> _saveLoginState(String email) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', true);
-    await prefs.setString('email', email);
+  Future<void> _saveUser(String fullName, String email, String password) async {
+    await FirebaseFirestore.instance.collection('users').doc(email).set({
+      'fullName': fullName,
+      'email': email, // Save email to Firestore
+      'password': password, // Save password to Firestore (ensure this is secure)
+    });
   }
 
   @override
@@ -59,6 +61,7 @@ class _SignInFilledState extends State<SignInFilled> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    const SizedBox(height: 50),
                     SizedBox(
                       width: 213,
                       height: 38.9,
@@ -69,7 +72,7 @@ class _SignInFilledState extends State<SignInFilled> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Welcome!',
+                      'Create Your Account',
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w500,
                         fontSize: 28,
@@ -86,7 +89,7 @@ class _SignInFilledState extends State<SignInFilled> {
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20.4),
                 child: Text(
-                  'Please enter your email and password to Sign In',
+                  'Please enter your details to Sign Up',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w400,
@@ -96,6 +99,13 @@ class _SignInFilledState extends State<SignInFilled> {
                 ),
               ),
               const SizedBox(height: 20),
+              // Full Name field
+              _buildInputField(
+                label: 'Full Name',
+                hintText: 'Juan Dela Cruz',
+                controller: _nameController,
+                isPassword: false,
+              ),
               // Email field
               _buildInputField(
                 label: 'Email Address',
@@ -110,55 +120,43 @@ class _SignInFilledState extends State<SignInFilled> {
                 controller: _passwordController,
                 isPassword: true,
               ),
-              const SizedBox(height: 50),
-              // Sign In Button
+              // Confirm Password field
+              _buildInputField(
+                label: 'Confirm Password',
+                hintText: '**********',
+                controller: _confirmPasswordController,
+                isPassword: true,
+              ),
+              const SizedBox(height: 20),
+              // Sign Up Button
               ElevatedButton(
                 onPressed: () async {
+                  String fullName = _nameController.text;
                   String email = _emailController.text;
                   String password = _passwordController.text;
+                  String confirmPassword = _confirmPasswordController.text;
 
-                  if (email.isEmpty || password.isEmpty) {
-                    _showToast('Please enter your email and password', Colors.red);
+                  if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+                    _showToast('Please fill in all fields', Colors.red);
+                  } else if (password != confirmPassword) {
+                    _showToast('Passwords do not match', Colors.red);
                   } else {
                     if (await _isConnectedToInternet()) {
                       try {
-                        // Sign in with Firebase Authentication
-                        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+                        // Create user with Firebase Authentication
+                        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
                           email: email,
                           password: password,
                         );
 
-                        // Fetch user data from Firestore
-                        var userDoc = await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(email) // Use email as document ID
-                            .get();
+                        // Save additional user information
+                        await _saveUser(fullName, email, password);
+                        _showToast("Account created successfully", Colors.green);
 
-                        if (userDoc.exists) {
-                          var user = userDoc.data()!;
-                          _showToast("Welcome, ${user['fullName']}", Colors.green);
-
-                          // Save login state in SharedPreferences
-                          await _saveLoginState(email);
-
-                          print("Success");
-
-                          // Show welcome notification
-                          await _notificationHandler.showWelcomeNotification(user['fullName']);
-
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => Home(
-                                email: user['email'],
-                              ),
-                            ),
-                          );
-
-
-                        } else {
-                          _showToast('User not found', Colors.red);
-                        }
+                        // Navigate to sign-in screen
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => SignInFilled()),
+                        );
                       } on FirebaseAuthException catch (e) {
                         _showToast(e.message ?? 'Error occurred', Colors.red);
                       }
@@ -175,45 +173,13 @@ class _SignInFilledState extends State<SignInFilled> {
                   ),
                 ),
                 child: Text(
-                  'Sign In',
+                  'Sign Up',
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                     fontSize: 18,
                     color: Colors.black,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Sign Up prompt
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "No account? ",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w400,
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      // Navigate to the Sign Up page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignUpFilled()),
-                      );
-                    },
-                    child: Text(
-                      "Sign Up",
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: const Color(0xFF73CBE6),
-                      ),
-                    ),
-                  ),
-                ],
               ),
               const SizedBox(height: 20),
             ],

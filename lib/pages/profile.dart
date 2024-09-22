@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,13 +9,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:ui'; // For blur effect
-import 'Database_Helper/static_users.dart';
 
 class Profile extends StatefulWidget {
-  final User user;
+  final String email; // Use email instead of User
 
-  const Profile({required this.user});
+  const Profile({required this.email});
 
   @override
   _ProfileState createState() => _ProfileState();
@@ -25,12 +24,9 @@ class _ProfileState extends State<Profile> {
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-
     if (pickedFile != null) {
       final profileImageUrl = await _uploadImageToFirestore(pickedFile);
       await _updateProfileImageInFirestore(profileImageUrl);
-
-      // Show SnackBar upon successful image selection and upload
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Image selected and uploaded successfully!'),
@@ -41,34 +37,17 @@ class _ProfileState extends State<Profile> {
   }
 
   Future<String> _uploadImageToFirestore(XFile file) async {
-    final storageRef = FirebaseStorage.instance
-        .ref()
-        .child('profile_pictures/${widget.user.studentNumber}.jpg');
+    final storageRef = FirebaseStorage.instance.ref().child('profile_pictures/${widget.email}.jpg');
     await storageRef.putFile(File(file.path));
     return await storageRef.getDownloadURL();
   }
 
   Future<void> _updateProfileImageInFirestore(String profileImageUrl) async {
-    final studentNumber = widget.user.studentNumber;
-    if (studentNumber != null && studentNumber.isNotEmpty) {
-      try {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(studentNumber)
-            .update({'profilePictureUrl': profileImageUrl});
-      } catch (e) {
-        Fluttertoast.showToast(
-          msg: "Error updating profile picture: $e",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0,
-        );
-      }
-    } else {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(widget.email).update({'profilePictureUrl': profileImageUrl});
+    } catch (e) {
       Fluttertoast.showToast(
-        msg: "Error: Student number is invalid.",
+        msg: "Error updating profile picture: $e",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
@@ -80,56 +59,17 @@ class _ProfileState extends State<Profile> {
 
   void _signOut(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     await prefs.setBool('isLoggedIn', false);
-    await prefs.remove('studentNumber');
-
+    await prefs.remove('email');
     Fluttertoast.showToast(
       msg: "Signed out successfully!",
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 1,
       backgroundColor: Colors.black54,
       textColor: Colors.white,
       fontSize: 16.0,
     );
-
-    // Close the application
     SystemNavigator.pop();
-  }
-
-  void _showProfileDialog(BuildContext context, String profileImageUrl) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.transparent, // Ensure the blur is visible
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent, // Transparent background for the dialog
-          elevation: 0, // Remove any shadow or elevation
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Full-screen blur
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    color: Colors.transparent, // Transparent to only show blur
-                  ),
-                ),
-              ),
-              // Larger profile image in the center
-              CircleAvatar(
-                radius: 100,
-                backgroundImage: profileImageUrl.isNotEmpty
-                    ? NetworkImage(profileImageUrl)
-                    : AssetImage('assets/images/default_pp.jpg') as ImageProvider,
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -139,10 +79,7 @@ class _ProfileState extends State<Profile> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('users')
-              .doc(widget.user.studentNumber)
-              .snapshots(),
+          stream: FirebaseFirestore.instance.collection('users').doc(widget.email).snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.red)));
@@ -152,11 +89,9 @@ class _ProfileState extends State<Profile> {
               return Center(child: CircularProgressIndicator());
             }
 
-            final data = snapshot.data?.data() as Map<String, dynamic>?;
-            final profileImageUrl = data?['profilePictureUrl'] as String? ?? '';
-            final firstName = data?['firstName'] as String? ?? '';
-            final lastName = data?['lastName'] as String? ?? '';
-            final studentNumber = data?['studentNumber'] as String? ?? '';
+            final data = snapshot.data?.data() as Map<String, dynamic>? ?? {};
+            final profileImageUrl = data['profilePictureUrl'] as String? ?? '';
+            final fullName = data['fullName'] as String? ?? '';
 
             return Column(
               children: [
@@ -203,23 +138,23 @@ class _ProfileState extends State<Profile> {
                           children: [
                             SizedBox(height: 20),
                             Text(
-                              '$firstName $lastName',
+                              fullName,
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 24,
                                 color: Colors.white,
                               ),
                             ),
+                            SizedBox(height: 8),
                             Text(
-                              studentNumber,
+                              widget.email, // Display email below the full name
                               style: GoogleFonts.poppins(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 16,
-                                color: Color(0xFF73CBE6),
+                                color: Colors.white54,
                               ),
                             ),
                             SizedBox(height: 20),
-                            _buildProfileDetail('Student Number', studentNumber),
                           ],
                         ),
                       ),
@@ -238,21 +173,17 @@ class _ProfileState extends State<Profile> {
                               ),
                             ),
                             Positioned(
-                              bottom: 0,
                               right: 0,
+                              bottom: 0,
                               child: GestureDetector(
                                 onTap: _pickImage,
                                 child: Container(
+                                  padding: EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: Colors.black, // You can change this to any color you prefer
                                     shape: BoxShape.circle,
                                   ),
-                                  padding: EdgeInsets.all(8),
-                                  child: SvgPicture.asset(
-                                    'assets/vectors/vector_63_x2.svg',
-                                    width: 24,
-                                    height: 24,
-                                  ),
+                                  child: Icon(Icons.camera_alt, color: Colors.white, size: 20), // White camera icon
                                 ),
                               ),
                             ),
@@ -275,28 +206,37 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  Widget _buildProfileDetail(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w400,
-            fontSize: 12,
-            color: Colors.grey[400],
+  void _showProfileDialog(BuildContext context, String profileImageUrl) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent, // Ensure the blur is visible
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent, // Transparent background for the dialog
+          elevation: 0, // Remove any shadow or elevation
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Full-screen blur
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    color: Colors.transparent, // Transparent to only show blur
+                  ),
+                ),
+              ),
+              // Larger profile image in the center
+              CircleAvatar(
+                radius: 100,
+                backgroundImage: profileImageUrl.isNotEmpty
+                    ? NetworkImage(profileImageUrl)
+                    : AssetImage('assets/images/default_pp.jpg') as ImageProvider,
+              ),
+            ],
           ),
-        ),
-        SizedBox(height: 4),
-        Text(
-          value,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Colors.white,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 

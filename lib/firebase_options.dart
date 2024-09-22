@@ -47,30 +47,29 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCPlwS-eYBFoHa0K_fIqr-qA2AoxWSXENs',
-    appId: '1:56104389901:web:4eaa316d038295230b3444',
-    messagingSenderId: '56104389901',
-    projectId: 'eduhelix-db',
-    authDomain: 'eduhelix-db.firebaseapp.com',
-    storageBucket: 'eduhelix-db.appspot.com',
-    measurementId: 'G-85CFJLJT3G',
+    apiKey: 'AIzaSyAn-V8xR3D0un7Vf1UKfIaev_s3LFOoKlA',
+    appId: '1:221573319395:web:5ba813f9c364c507e413d6',
+    messagingSenderId: '221573319395',
+    projectId: 'agosbuhay-app-db',
+    authDomain: 'agosbuhay-app-db.firebaseapp.com',
+    storageBucket: 'agosbuhay-app-db.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCBZ0_7zoxo5fGgAtGavbwF5TnEJIXdnHY',
-    appId: '1:56104389901:android:09a85e2287f220740b3444',
-    messagingSenderId: '56104389901',
-    projectId: 'eduhelix-db',
-    storageBucket: 'eduhelix-db.appspot.com',
+    apiKey: 'AIzaSyDGy_abg5LLmhUZcvq4sd0vvhNIXwzlF_U',
+    appId: '1:221573319395:android:b5b4f3a513f9e30de413d6',
+    messagingSenderId: '221573319395',
+    projectId: 'agosbuhay-app-db',
+    storageBucket: 'agosbuhay-app-db.appspot.com',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCPlwS-eYBFoHa0K_fIqr-qA2AoxWSXENs',
-    appId: '1:56104389901:web:2dbf27e72270a17d0b3444',
-    messagingSenderId: '56104389901',
-    projectId: 'eduhelix-db',
-    authDomain: 'eduhelix-db.firebaseapp.com',
-    storageBucket: 'eduhelix-db.appspot.com',
-    measurementId: 'G-QGGHRX1Z1T',
+    apiKey: 'AIzaSyAn-V8xR3D0un7Vf1UKfIaev_s3LFOoKlA',
+    appId: '1:221573319395:web:4fea00b3c4073bffe413d6',
+    messagingSenderId: '221573319395',
+    projectId: 'agosbuhay-app-db',
+    authDomain: 'agosbuhay-app-db.firebaseapp.com',
+    storageBucket: 'agosbuhay-app-db.appspot.com',
   );
+
 }
