@@ -155,10 +155,10 @@ class _SplashState extends State<Splash> {
             // Centered logo
             Center(
               child: SizedBox(
-                width: 250,
-                height: 45,
+                width: 300,
+                height: 300,
                 child: Image.asset(
-                  'assets/images/sample_logo.png',
+                  'assets/images/logo-no-background.png',
                   fit: BoxFit.contain, // Adjust as needed for your layout
                 ),
               ),

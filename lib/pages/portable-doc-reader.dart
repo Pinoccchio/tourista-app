@@ -13,16 +13,16 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 
-class TextToSpeech extends StatefulWidget {
+class PortableDocReader extends StatefulWidget {
   final String email;
 
-  TextToSpeech({required this.email});
+  PortableDocReader({required this.email});
 
   @override
-  _TextToSpeechState createState() => _TextToSpeechState();
+  _PortableDocReaderState createState() => _PortableDocReaderState();
 }
 
-class _TextToSpeechState extends State<TextToSpeech> {
+class _PortableDocReaderState extends State<PortableDocReader> {
   List<UploadedFile> uploadedFiles = [];
 
   @override

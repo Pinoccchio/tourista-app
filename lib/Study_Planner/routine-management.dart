@@ -8,16 +8,16 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore packa
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart'; // Import intl package for date formatting
 
-class StudyPlanner extends StatefulWidget {
+class RoutineManagement extends StatefulWidget {
   final String studentNumber;
 
-  StudyPlanner({required this.studentNumber});
+  RoutineManagement({required this.studentNumber});
 
   @override
-  _StudyPlannerState createState() => _StudyPlannerState();
+  _RoutineManagementState createState() => _RoutineManagementState();
 }
 
-class _StudyPlannerState extends State<StudyPlanner>
+class _RoutineManagementState extends State<RoutineManagement>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   Timer? _taskCheckTimer;

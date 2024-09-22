@@ -5,8 +5,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
-import '../../Study_Planner/study_planner.dart';
-import '../text_to_speech.dart';
+import '../../Study_Planner/routine-management.dart';
+import '../portable-doc-reader.dart';
 import 'menu_item.dart';
 
 class Home extends StatefulWidget {
@@ -228,7 +228,7 @@ class _HomeState extends State<Home> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => StudyPlanner(
+                builder: (context) => RoutineManagement(
                   studentNumber: widget.email, // Use email for navigation
                 ),
               ),
@@ -244,7 +244,7 @@ class _HomeState extends State<Home> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => TextToSpeech(
+                builder: (context) => PortableDocReader(
                   email: widget.email, // Use email for navigation
                 ),
               ),
@@ -297,7 +297,7 @@ class _HomeState extends State<Home> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => TextToSpeech(
+                  builder: (context) => PortableDocReader(
                     email: widget.email, // Use email for navigation
                   ),
                 ),
