@@ -13,7 +13,7 @@ class SignUpFilled extends StatefulWidget {
 }
 
 class _SignUpFilledState extends State<SignUpFilled> {
-  final FirebaseAuth _auth = FirebaseAuth.instance; // Firebase Auth instance
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -29,7 +29,7 @@ class _SignUpFilledState extends State<SignUpFilled> {
   Future<void> _saveUser(String fullName, String email, String password) async {
     await FirebaseFirestore.instance.collection('users').doc(email).set({
       'fullName': fullName,
-      'email': email, // Save email to Firestore
+      'email': email,
       'password': password, // Save password to Firestore (ensure this is secure)
     });
   }
@@ -44,146 +44,147 @@ class _SignUpFilledState extends State<SignUpFilled> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          height: MediaQuery.of(context).size.height,
-          padding: const EdgeInsets.symmetric(horizontal: 17),
-          decoration: const BoxDecoration(
-            color: Colors.black,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Logo and Welcome Section
-              Center(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 50),
-                    SizedBox(
-                      width: 213,
-                      height: 38.9,
-                      child: Image.asset(
-                        'assets/images/sample_logo.png',
-                        fit: BoxFit.contain,
-                      ),
+      body: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height,
+        padding: const EdgeInsets.symmetric(horizontal: 17),
+        decoration: const BoxDecoration(
+          color: Colors.black,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Logo and Welcome Section
+            Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 250,
+                    height: 200,
+                    child: Image.asset(
+                      'assets/images/logo-no-background.png',
+                      fit: BoxFit.contain,
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Create Your Account',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 28,
-                        height: 1.1,
-                        color: const Color(0xFF73CBE6),
-                      ),
-                      textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    'Create Your Account',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 28,
+                      height: 1.1,
+                      color: const Color(0xFF73CBE6),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
+            // Instruction text
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20.4),
+              child: Text(
+                'Please enter your details to Sign Up',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w400,
+                  fontSize: 16,
+                  color: const Color(0xFFFFFFFF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Scrollable Input Fields Section
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildInputField(
+                      label: 'Full Name',
+                      hintText: 'Juan Dela Cruz',
+                      controller: _nameController,
+                      isPassword: false,
+                    ),
+                    _buildInputField(
+                      label: 'Email Address',
+                      hintText: 'juandela.cruz@example.com',
+                      controller: _emailController,
+                      isPassword: false,
+                    ),
+                    _buildInputField(
+                      label: 'Password',
+                      hintText: '**********',
+                      controller: _passwordController,
+                      isPassword: true,
+                    ),
+                    _buildInputField(
+                      label: 'Confirm Password',
+                      hintText: '**********',
+                      controller: _confirmPasswordController,
+                      isPassword: true,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 40),
-              // Instruction text
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20.4),
-                child: Text(
-                  'Please enter your details to Sign Up',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 16,
-                    color: const Color(0xFFFFFFFF),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Full Name field
-              _buildInputField(
-                label: 'Full Name',
-                hintText: 'Juan Dela Cruz',
-                controller: _nameController,
-                isPassword: false,
-              ),
-              // Email field
-              _buildInputField(
-                label: 'Email Address',
-                hintText: 'juandela.cruz@example.com',
-                controller: _emailController,
-                isPassword: false,
-              ),
-              // Password field
-              _buildInputField(
-                label: 'Password',
-                hintText: '**********',
-                controller: _passwordController,
-                isPassword: true,
-              ),
-              // Confirm Password field
-              _buildInputField(
-                label: 'Confirm Password',
-                hintText: '**********',
-                controller: _confirmPasswordController,
-                isPassword: true,
-              ),
-              const SizedBox(height: 20),
-              // Sign Up Button
-              ElevatedButton(
-                onPressed: () async {
-                  String fullName = _nameController.text;
-                  String email = _emailController.text;
-                  String password = _passwordController.text;
-                  String confirmPassword = _confirmPasswordController.text;
+            ),
+            const SizedBox(height: 20),
+            // Sign Up Button
+            ElevatedButton(
+              onPressed: () async {
+                String fullName = _nameController.text;
+                String email = _emailController.text;
+                String password = _passwordController.text;
+                String confirmPassword = _confirmPasswordController.text;
 
-                  if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-                    _showToast('Please fill in all fields', Colors.red);
-                  } else if (password != confirmPassword) {
-                    _showToast('Passwords do not match', Colors.red);
-                  } else {
-                    if (await _isConnectedToInternet()) {
-                      try {
-                        // Create user with Firebase Authentication
-                        UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-                          email: email,
-                          password: password,
-                        );
+                if (fullName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+                  _showToast('Please fill in all fields', Colors.red);
+                } else if (password != confirmPassword) {
+                  _showToast('Passwords do not match', Colors.red);
+                } else {
+                  if (await _isConnectedToInternet()) {
+                    try {
+                      // Create user with Firebase Authentication
+                      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+                        email: email,
+                        password: password,
+                      );
 
-                        // Save additional user information
-                        await _saveUser(fullName, email, password);
-                        _showToast("Account created successfully", Colors.green);
+                      // Save additional user information
+                      await _saveUser(fullName, email, password);
+                      _showToast("Account created successfully", Colors.green);
 
-                        // Navigate to sign-in screen
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (context) => SignInFilled()),
-                        );
-                      } on FirebaseAuthException catch (e) {
-                        _showToast(e.message ?? 'Error occurred', Colors.red);
-                      }
-                    } else {
-                      _showToast('No internet connection', Colors.red);
+                      // Navigate to sign-in screen
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => SignInFilled()),
+                      );
+                    } on FirebaseAuthException catch (e) {
+                      _showToast(e.message ?? 'Error occurred', Colors.red);
                     }
+                  } else {
+                    _showToast('No internet connection', Colors.red);
                   }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
-                  backgroundColor: const Color(0xFF73CBE6),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(27),
-                  ),
-                ),
-                child: Text(
-                  'Sign Up',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 18,
-                    color: Colors.black,
-                  ),
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 100),
+                backgroundColor: const Color(0xFF73CBE6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(27),
                 ),
               ),
-              const SizedBox(height: 20),
-            ],
-          ),
+              child: Text(
+                'Sign Up',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );

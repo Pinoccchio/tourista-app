@@ -60,14 +60,13 @@ class _SignInFilledState extends State<SignInFilled> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
-                      width: 213,
-                      height: 38.9,
+                      width: 250,
+                      height: 200,
                       child: Image.asset(
-                        'assets/images/sample_logo.png',
+                        'assets/images/logo-no-background.png',
                         fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 20),
                     Text(
                       'Welcome!',
                       style: GoogleFonts.poppins(
