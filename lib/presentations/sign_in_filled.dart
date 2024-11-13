@@ -2,13 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/SignIn_Screen/sign_up_filled.dart';
+import 'package:flutter_app/presentations/sign_up_filled.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../Home_Screen/home.dart';
-import '../Notification_Handler/notification_handler.dart';
+import 'Home_Screen/home.dart';
+import 'Notification_Handler/notification_handler.dart';
 
 class SignInFilled extends StatefulWidget {
   @override

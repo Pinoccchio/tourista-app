@@ -1,16 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/pages/SignIn_Screen/sign_in_filled.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_app/presentations/sign_in_filled.dart';
 import 'package:lottie/lottie.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'Database_Helper/FirestoreDatabaseHelper.dart';
-import 'Home_Screen/home.dart'; // For storing preferences
 import 'package:http/http.dart' as http;
+
+import 'Home_Screen/home.dart';
 
 class Splash extends StatefulWidget {
   @override

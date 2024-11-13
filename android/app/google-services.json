@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "221573319395",
-    "project_id": "agosbuhay-app-db",
-    "storage_bucket": "agosbuhay-app-db.appspot.com"
+    "project_number": "325108867243",
+    "project_id": "tourista-db",
+    "storage_bucket": "tourista-db.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:221573319395:android:b5b4f3a513f9e30de413d6",
+        "mobilesdk_app_id": "1:325108867243:android:590f1696a52ad6eb5cd7ee",
         "android_client_info": {
-          "package_name": "com.example.flutter_app"
+          "package_name": "com.example.tourista_app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDGy_abg5LLmhUZcvq4sd0vvhNIXwzlF_U"
+          "current_key": "AIzaSyCSjlfedE5YwY2HzZK34jRlRumtt0Pfv8k"
         }
       ],
       "services": {

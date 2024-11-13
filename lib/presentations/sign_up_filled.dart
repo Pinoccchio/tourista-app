@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/SignIn_Screen/sign_in_filled.dart';
+import 'package:flutter_app/presentations/sign_in_filled.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../Notification_Handler/notification_handler.dart';
+
+import 'Notification_Handler/notification_handler.dart';
 
 class SignUpFilled extends StatefulWidget {
   @override

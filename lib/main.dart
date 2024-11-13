@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for SystemChrome
-import 'package:flutter_app/pages/Notification_Handler/notification_handler.dart';
+import 'package:flutter_app/presentations/Notification_Handler/notification_handler.dart';
 import 'package:flutter_app/routes/app_routes.dart'; // Import the routes
 import 'package:timezone/data/latest.dart' as tz;
 
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
+      title: 'Tourista App',
       debugShowCheckedModeBanner: false,
       initialRoute: AppRoutes.splashScreen, // Set initial route if needed
       routes: AppRoutes.getRoutes(), // Use the routes defined in AppRoutes

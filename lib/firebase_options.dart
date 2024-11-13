@@ -47,29 +47,30 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAn-V8xR3D0un7Vf1UKfIaev_s3LFOoKlA',
-    appId: '1:221573319395:web:5ba813f9c364c507e413d6',
-    messagingSenderId: '221573319395',
-    projectId: 'agosbuhay-app-db',
-    authDomain: 'agosbuhay-app-db.firebaseapp.com',
-    storageBucket: 'agosbuhay-app-db.appspot.com',
+    apiKey: 'AIzaSyC_u08UAnhQFTBmTv33HifWkJuCUkRp9MU',
+    appId: '1:325108867243:web:5ea84d49d31515bc5cd7ee',
+    messagingSenderId: '325108867243',
+    projectId: 'tourista-db',
+    authDomain: 'tourista-db.firebaseapp.com',
+    storageBucket: 'tourista-db.firebasestorage.app',
+    measurementId: 'G-B5MTTL54YL',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDGy_abg5LLmhUZcvq4sd0vvhNIXwzlF_U',
-    appId: '1:221573319395:android:b5b4f3a513f9e30de413d6',
-    messagingSenderId: '221573319395',
-    projectId: 'agosbuhay-app-db',
-    storageBucket: 'agosbuhay-app-db.appspot.com',
+    apiKey: 'AIzaSyCSjlfedE5YwY2HzZK34jRlRumtt0Pfv8k',
+    appId: '1:325108867243:android:590f1696a52ad6eb5cd7ee',
+    messagingSenderId: '325108867243',
+    projectId: 'tourista-db',
+    storageBucket: 'tourista-db.firebasestorage.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAn-V8xR3D0un7Vf1UKfIaev_s3LFOoKlA',
-    appId: '1:221573319395:web:4fea00b3c4073bffe413d6',
-    messagingSenderId: '221573319395',
-    projectId: 'agosbuhay-app-db',
-    authDomain: 'agosbuhay-app-db.firebaseapp.com',
-    storageBucket: 'agosbuhay-app-db.appspot.com',
+    apiKey: 'AIzaSyC_u08UAnhQFTBmTv33HifWkJuCUkRp9MU',
+    appId: '1:325108867243:web:1750c80c2441646c5cd7ee',
+    messagingSenderId: '325108867243',
+    projectId: 'tourista-db',
+    authDomain: 'tourista-db.firebaseapp.com',
+    storageBucket: 'tourista-db.firebasestorage.app',
+    measurementId: 'G-XDQZLWYMRV',
   );
-
 }
